@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  model: MyString
+  brand: MyString
+  metadata: 
+  public_metadata: 
+  sector: one
+  is_virtual: false
+
+two:
+  name: MyString
+  model: MyString
+  brand: MyString
+  metadata: 
+  public_metadata: 
+  sector: two
+  is_virtual: false

@@ -1,0 +1,2 @@
+class CredentialFormat < ApplicationRecord
+end

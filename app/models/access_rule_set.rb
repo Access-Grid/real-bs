@@ -1,0 +1,2 @@
+class AccessRuleSet < ApplicationRecord
+end

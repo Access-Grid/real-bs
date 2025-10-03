@@ -1,0 +1,2 @@
+class CredentialFormatParityBit < ApplicationRecord
+end
