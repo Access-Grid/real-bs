@@ -1,0 +1,2 @@
+class AccessPath < ApplicationRecord
+end
