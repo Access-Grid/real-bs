@@ -263,6 +263,24 @@ As we implement each phase, we'll record gaps here.
 |-------|-----------|-----------|-----------------|----------|
 | *(to be filled during implementation)* | | | | |
 
+### TODO: Evaluate JSON column usage
+
+Phases 4-5 introduced JSON columns for value-object data:
+
+| Column | Table | Contents |
+|--------|-------|----------|
+| `card_pin` | `credentials` | PIN values (facility code, card number) |
+| `card_pin_template` | `credential_types` | PIN config template (lengths, masks, required flags) |
+| `elements` | `credential_formats` | BinaryFormat bit-field definitions (field names, bit positions, parity rules) |
+
+None of these contain FK references -- they are self-contained value structures. But we should evaluate honestly whether JSON columns are the right approach here vs. normalized tables:
+
+**Arguments for JSON**: These are schema-less blobs that vary per format/template, the app treats them as opaque payloads passed through to/from the Flex API, and normalizing deeply nested bit-field definitions would create several tables for little query benefit.
+
+**Arguments against JSON**: No DB-level validation or type safety, can't index or query individual fields, harder to migrate if the structure changes, and it's inconsistent with the rest of the schema which is fully normalized. In Phase 6 we explicitly rejected JSON for `DoorAccessPrivElement` because it contained FK references -- but even without FKs, the principle of keeping structured domain data in proper columns/tables may still apply.
+
+**Decision**: TBD -- revisit before v1 release.
+
 ## Test Strategy
 
 ### Unit Tests (`test/models/`, `test/translators/`)
