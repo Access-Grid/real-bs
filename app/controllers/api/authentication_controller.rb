@@ -1,6 +1,6 @@
 module Api
   class AuthenticationController < BaseController
-    skip_before_action :authenticate!
+    skip_before_action :authenticate!, only: :create
 
     def create
       user = User.find_by(username: params[:username])
@@ -22,6 +22,11 @@ module Api
       else
         render json: { authenticated: false }
       end
+    end
+
+    def terminate
+      @current_session.destroy
+      render json: {}
     end
   end
 end

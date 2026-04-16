@@ -54,4 +54,33 @@ class Api::AuthenticateTest < ActionDispatch::IntegrationTest
     assert_not_nil session
     assert_equal @user.id, session.user_id
   end
+
+  # -- Terminate --
+
+  test "GET /terminate returns 401 without token" do
+    get "/terminate"
+    assert_response :unauthorized
+  end
+
+  test "GET /terminate destroys the current session" do
+    post "/authenticate", params: { username: "admin", password: "password123" }, as: :json
+    token = JSON.parse(response.body)["sessionToken"]
+
+    assert_difference "ApiSession.count", -1 do
+      get "/terminate", headers: { "sessionToken" => token }
+    end
+    assert_response :success
+  end
+
+  test "GET /terminate invalidates the token for subsequent requests" do
+    post "/authenticate", params: { username: "admin", password: "password123" }, as: :json
+    token = JSON.parse(response.body)["sessionToken"]
+
+    get "/terminate", headers: { "sessionToken" => token }
+    assert_response :success
+
+    # Token should no longer work
+    get "/sched/list", headers: { "sessionToken" => token }
+    assert_response :unauthorized
+  end
 end
