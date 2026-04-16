@@ -19,6 +19,24 @@ Rails.application.routes.draw do
     post "controller/save" => "api/controllers#save"
     post "controller/update/:id" => "api/controllers#update"
     post "controller/delete/:id" => "api/controllers#delete"
+
+    # Dev: Door
+    get "door/list" => "api/doors#list"
+    post "door/save" => "api/doors#save"
+    post "door/update/:id" => "api/doors#update"
+    post "door/delete/:id" => "api/doors#delete"
+
+    # Dev: CredReader
+    get "credReader/list" => "api/cred_readers#list"
+    post "credReader/save" => "api/cred_readers#save"
+    post "credReader/update/:id" => "api/cred_readers#update"
+    post "credReader/delete/:id" => "api/cred_readers#delete"
+
+    # Dev: Sensor
+    get "sensor/list" => "api/sensors#list"
+    post "sensor/save" => "api/sensors#save"
+    post "sensor/update/:id" => "api/sensors#update"
+    post "sensor/delete/:id" => "api/sensors#delete"
   end
 
   # Defines the root path route ("/")

@@ -24,13 +24,23 @@ module Api
       @current_user
     end
 
-    def render_list_response(items, offset: 0, max: nil)
-      render json: {
-        offset: offset,
-        max: max || items.size,
-        count: items.size,
-        instanceList: items
-      }
+    def find_by_id_or_uuid(model_class, id)
+      if id.to_s.match?(/\A\d+\z/)
+        model_class.find_by(id: id)
+      else
+        model_class.find_by(uuid: id)
+      end
+    end
+
+    def paginate(scope)
+      offset = (params[:offset] || 0).to_i
+      max = params[:max]&.to_i
+      total = scope.count
+
+      items = scope.offset(offset)
+      items = items.limit(max) if max
+
+      [ items, offset, max, total ]
     end
   end
 end

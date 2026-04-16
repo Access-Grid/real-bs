@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_16_173759) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_16_174949) do
   create_table "access_controllers", force: :cascade do |t|
     t.string "name"
     t.string "model"
@@ -122,8 +122,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_173759) do
     t.integer "access_controller_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "uuid"
     t.index ["access_controller_id"], name: "index_entry_ways_on_access_controller_id"
     t.index ["sector_id"], name: "index_entry_ways_on_sector_id"
+    t.index ["uuid"], name: "index_entry_ways_on_uuid", unique: true
   end
 
   create_table "groups", force: :cascade do |t|
@@ -156,8 +158,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_173759) do
     t.integer "entry_way_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "uuid"
     t.index ["access_controller_id"], name: "index_readers_on_access_controller_id"
     t.index ["entry_way_id"], name: "index_readers_on_entry_way_id"
+    t.index ["uuid"], name: "index_readers_on_uuid", unique: true
   end
 
   create_table "sectors", force: :cascade do |t|
@@ -181,8 +185,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_173759) do
     t.datetime "last_state_update"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "uuid"
     t.index ["access_controller_id"], name: "index_sensors_on_access_controller_id"
     t.index ["entry_way_id"], name: "index_sensors_on_entry_way_id"
+    t.index ["uuid"], name: "index_sensors_on_uuid", unique: true
   end
 
   create_table "users", force: :cascade do |t|

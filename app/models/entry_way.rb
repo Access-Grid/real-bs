@@ -1,4 +1,6 @@
 class EntryWay < ApplicationRecord
+  include HasUuid
+
   belongs_to :sector
   belongs_to :access_controller
 

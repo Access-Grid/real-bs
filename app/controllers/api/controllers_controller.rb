@@ -1,17 +1,11 @@
 module Api
   class ControllersController < BaseController
     def list
-      all = AccessController.all
-      offset = (params[:offset] || 0).to_i
-      max = params[:max]&.to_i
-
-      items = all.offset(offset)
-      items = items.limit(max) if max
-
+      items, offset, max, total = paginate(AccessController.all)
       render json: {
         offset: offset,
         max: max || items.size,
-        count: all.count,
+        count: total,
         instanceList: items.map { |ac| ControllerTranslator.to_flex(ac) }
       }
     end
@@ -29,7 +23,7 @@ module Api
     end
 
     def update
-      ac = find_by_id_or_uuid(params[:id])
+      ac = find_by_id_or_uuid(AccessController, params[:id])
       return render json: { error: "Not found" }, status: :not_found unless ac
 
       attrs = ControllerTranslator.from_flex(params.to_unsafe_h)
@@ -41,7 +35,7 @@ module Api
     end
 
     def delete
-      ac = find_by_id_or_uuid(params[:id])
+      ac = find_by_id_or_uuid(AccessController, params[:id])
       return render json: { error: "Not found" }, status: :not_found unless ac
 
       ac.destroy
@@ -49,14 +43,6 @@ module Api
     end
 
     private
-
-    def find_by_id_or_uuid(id)
-      if id.to_s.match?(/\A\d+\z/)
-        AccessController.find_by(id: id)
-      else
-        AccessController.find_by(uuid: id)
-      end
-    end
 
     def default_sector
       Sector.first || begin
