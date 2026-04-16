@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_03_152945) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_16_173020) do
   create_table "access_controllers", force: :cascade do |t|
     t.string "name"
     t.string "model"
@@ -34,6 +34,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_03_152945) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "api_sessions", force: :cascade do |t|
+    t.string "session_token", null: false
+    t.integer "user_id", null: false
+    t.datetime "expires_at", null: false
+    t.integer "api_client_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["session_token"], name: "index_api_sessions_on_session_token", unique: true
+    t.index ["user_id"], name: "index_api_sessions_on_user_id"
   end
 
   create_table "buildings", force: :cascade do |t|
@@ -172,7 +183,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_03_152945) do
     t.index ["entry_way_id"], name: "index_sensors_on_entry_way_id"
   end
 
+  create_table "users", force: :cascade do |t|
+    t.string "username", null: false
+    t.string "password_digest", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["username"], name: "index_users_on_username", unique: true
+  end
+
   add_foreign_key "access_controllers", "sectors"
+  add_foreign_key "api_sessions", "users"
   add_foreign_key "credential_format_field_bits", "credential_format_fields"
   add_foreign_key "credential_format_parity_bit_ranges", "credential_format_parity_bits"
   add_foreign_key "credentials", "credential_types"

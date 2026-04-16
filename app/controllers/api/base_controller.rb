@@ -5,8 +5,23 @@ module Api
     private
 
     def authenticate!
-      # Phase 1 will implement real token auth.
-      # For now, allow all requests to enable API development.
+      token = request.headers["sessionToken"]
+      if token.blank?
+        render json: { error: "Missing sessionToken header" }, status: :unauthorized
+        return
+      end
+
+      @current_session = ApiSession.active.find_by(session_token: token)
+      if @current_session.nil?
+        render json: { error: "Invalid or expired sessionToken" }, status: :unauthorized
+        return
+      end
+
+      @current_user = @current_session.user
+    end
+
+    def current_user
+      @current_user
     end
 
     def render_list_response(items, offset: 0, max: nil)

@@ -11,6 +11,7 @@ Rails.application.routes.draw do
 
   # Z9/Flex Community API
   scope defaults: { format: :json } do
+    post "authenticate" => "api/authentication#create"
     get "api/health" => "api/health#show"
   end
 
