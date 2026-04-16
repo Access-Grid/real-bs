@@ -37,6 +37,18 @@ Rails.application.routes.draw do
     post "sensor/save" => "api/sensors#save"
     post "sensor/update/:id" => "api/sensors#update"
     post "sensor/delete/:id" => "api/sensors#delete"
+
+    # Cred
+    get "cred/list" => "api/creds#list"
+    post "cred/save" => "api/creds#save"
+    post "cred/update/:id" => "api/creds#update"
+    post "cred/delete/:id" => "api/creds#delete"
+
+    # CredTemplate
+    get "credTemplate/list" => "api/cred_templates#list"
+    post "credTemplate/save" => "api/cred_templates#save"
+    post "credTemplate/update/:id" => "api/cred_templates#update"
+    post "credTemplate/delete/:id" => "api/cred_templates#delete"
   end
 
   # Defines the root path route ("/")

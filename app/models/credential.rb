@@ -1,4 +1,8 @@
 class Credential < ApplicationRecord
-  belongs_to :person
-  belongs_to :credential_type
+  include HasUuid
+
+  belongs_to :person, optional: true
+  belongs_to :credential_type, optional: true
+
+  validates :name, presence: true
 end

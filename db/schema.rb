@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_16_180343) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_16_200000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -90,15 +90,27 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_180343) do
     t.string "protocol"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name"
+    t.string "uuid"
+    t.integer "priority"
+    t.json "card_pin_template"
+    t.index ["uuid"], name: "index_credential_types_on_uuid", unique: true
   end
 
   create_table "credentials", force: :cascade do |t|
-    t.integer "person_id", null: false
-    t.integer "credential_type_id", null: false
+    t.integer "person_id"
+    t.integer "credential_type_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "name"
+    t.string "uuid"
+    t.boolean "enabled", default: true
+    t.datetime "effective"
+    t.datetime "expires"
+    t.json "card_pin"
     t.index ["credential_type_id"], name: "index_credentials_on_credential_type_id"
     t.index ["person_id"], name: "index_credentials_on_person_id"
+    t.index ["uuid"], name: "index_credentials_on_uuid", unique: true
   end
 
   create_table "devices", force: :cascade do |t|
