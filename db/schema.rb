@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_16_200000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_16_210000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -82,6 +82,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_200000) do
     t.integer "length"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "uuid"
+    t.integer "data_format_type", default: 1
+    t.integer "min_bits"
+    t.integer "max_bits"
+    t.boolean "support_reverse_read", default: false
+    t.json "elements"
+    t.index ["uuid"], name: "index_credential_formats_on_uuid", unique: true
   end
 
   create_table "credential_types", force: :cascade do |t|
@@ -111,6 +118,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_200000) do
     t.index ["credential_type_id"], name: "index_credentials_on_credential_type_id"
     t.index ["person_id"], name: "index_credentials_on_person_id"
     t.index ["uuid"], name: "index_credentials_on_uuid", unique: true
+  end
+
+  create_table "data_layouts", force: :cascade do |t|
+    t.string "name"
+    t.string "uuid"
+    t.integer "layout_type", default: 0
+    t.integer "priority"
+    t.boolean "enabled", default: true
+    t.integer "data_format_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["uuid"], name: "index_data_layouts_on_uuid", unique: true
   end
 
   create_table "devices", force: :cascade do |t|
@@ -180,6 +199,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_200000) do
   add_foreign_key "credential_format_parity_bit_ranges", "credential_format_parity_bits"
   add_foreign_key "credentials", "credential_types"
   add_foreign_key "credentials", "people"
+  add_foreign_key "data_layouts", "credential_formats", column: "data_format_id"
   add_foreign_key "devices", "devices", column: "logical_parent_id"
   add_foreign_key "devices", "devices", column: "physical_parent_id"
   add_foreign_key "devices", "sectors"

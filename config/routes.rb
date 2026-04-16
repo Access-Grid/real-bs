@@ -49,6 +49,26 @@ Rails.application.routes.draw do
     post "credTemplate/save" => "api/cred_templates#save"
     post "credTemplate/update/:id" => "api/cred_templates#update"
     post "credTemplate/delete/:id" => "api/cred_templates#delete"
+
+    # DataFormat / BinaryFormat (both map to CredentialFormat)
+    get "dataFormat/list" => "api/data_formats#list"
+    post "dataFormat/save" => "api/data_formats#save"
+    post "dataFormat/update/:id" => "api/data_formats#update"
+    post "dataFormat/delete/:id" => "api/data_formats#delete"
+    get "binaryFormat/list" => "api/data_formats#list"
+    post "binaryFormat/save" => "api/data_formats#save"
+    post "binaryFormat/update/:id" => "api/data_formats#update"
+    post "binaryFormat/delete/:id" => "api/data_formats#delete"
+
+    # DataLayout / BasicDataLayout (both map to DataLayout)
+    get "dataLayout/list" => "api/data_layouts#list"
+    post "dataLayout/save" => "api/data_layouts#save"
+    post "dataLayout/update/:id" => "api/data_layouts#update"
+    post "dataLayout/delete/:id" => "api/data_layouts#delete"
+    get "basicDataLayout/list" => "api/data_layouts#list"
+    post "basicDataLayout/save" => "api/data_layouts#save"
+    post "basicDataLayout/update/:id" => "api/data_layouts#update"
+    post "basicDataLayout/delete/:id" => "api/data_layouts#delete"
   end
 
   # Defines the root path route ("/")
