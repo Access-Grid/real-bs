@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_16_240000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_16_250000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -171,6 +171,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_240000) do
     t.index ["access_rule_set_id"], name: "index_door_access_priv_elements_on_access_rule_set_id"
     t.index ["door_id"], name: "index_door_access_priv_elements_on_door_id"
     t.index ["schedule_id"], name: "index_door_access_priv_elements_on_schedule_id"
+  end
+
+  create_table "encryption_keys", force: :cascade do |t|
+    t.string "uuid"
+    t.string "algorithm"
+    t.integer "size"
+    t.string "key_identifier"
+    t.text "bytes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["uuid"], name: "index_encryption_keys_on_uuid", unique: true
   end
 
   create_table "events", force: :cascade do |t|

@@ -1,0 +1,2 @@
+class NodeDev < Device
+end

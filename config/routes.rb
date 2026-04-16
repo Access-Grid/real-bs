@@ -103,6 +103,28 @@ Rails.application.routes.draw do
     # Evt (maps to Event) -- read-only
     get "evt/list" => "api/evts#list"
     get "evt/show/:id" => "api/evts#show"
+
+    # Dev: Actuator
+    get "actuator/list" => "api/actuators#list"
+    post "actuator/save" => "api/actuators#save"
+    post "actuator/update/:id" => "api/actuators#update"
+    post "actuator/delete/:id" => "api/actuators#delete"
+
+    # Dev: NodeDev
+    get "nodeDev/list" => "api/node_devs#list"
+    post "nodeDev/save" => "api/node_devs#save"
+    post "nodeDev/update/:id" => "api/node_devs#update"
+    post "nodeDev/delete/:id" => "api/node_devs#delete"
+
+    # EncryptionKey
+    get "encryptionKey/list" => "api/encryption_keys#list"
+    post "encryptionKey/save" => "api/encryption_keys#save"
+    post "encryptionKey/update/:id" => "api/encryption_keys#update"
+    post "encryptionKey/delete/:id" => "api/encryption_keys#delete"
+
+    # DevActions (command endpoints)
+    get "json/doorModeChange" => "api/dev_actions#door_mode_change"
+    get "json/doorMomentaryUnlock" => "api/dev_actions#door_momentary_unlock"
   end
 
   # Defines the root path route ("/")

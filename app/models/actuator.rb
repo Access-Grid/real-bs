@@ -1,0 +1,2 @@
+class Actuator < Device
+end
