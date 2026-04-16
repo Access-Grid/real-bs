@@ -4,9 +4,9 @@ class SensorTranslatorTest < ActiveSupport::TestCase
   setup do
     @building = Building.create!(name: "HQ")
     @sector = Sector.create!(name: "Floor 1", building: @building)
-    @ac = AccessController.create!(name: "Panel 1", sector: @sector)
-    @ew = EntryWay.create!(name: "Front Door", sector: @sector, access_controller: @ac)
-    @sensor = Sensor.create!(name: "Door Contact", brand: "Z9", model: "DC-100", access_controller: @ac, entry_way: @ew)
+    @io_controller = IoController.create!(name: "Panel 1", sector: @sector)
+    @door = Door.create!(name: "Front Door", sector: @sector, logical_parent: @io_controller)
+    @sensor = Sensor.create!(name: "Door Contact", brand: "Z9", model: "DC-100", sector: @sector, physical_parent: @io_controller, logical_parent: @door)
   end
 
   test "to_flex returns devType 2" do
@@ -21,9 +21,9 @@ class SensorTranslatorTest < ActiveSupport::TestCase
     assert_equal "Door Contact", result[:name]
   end
 
-  test "to_flex includes logicalParent for entry_way" do
+  test "to_flex includes logicalParent for door" do
     result = SensorTranslator.to_flex(@sensor)
-    assert_equal @ew.id, result[:logicalParent][:unid]
+    assert_equal @door.id, result[:logicalParent][:unid]
   end
 
   test "from_flex extracts name and metadata fields" do

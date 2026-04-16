@@ -1,0 +1,2 @@
+class IoController < Device
+end

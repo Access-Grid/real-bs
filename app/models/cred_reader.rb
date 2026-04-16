@@ -1,0 +1,2 @@
+class CredReader < Device
+end

@@ -8,9 +8,9 @@ class Api::CredReaderTest < ActionDispatch::IntegrationTest
 
     @building = Building.create!(name: "HQ")
     @sector = Sector.create!(name: "Floor 1", building: @building)
-    @ac = AccessController.create!(name: "Panel 1", sector: @sector)
-    @ew = EntryWay.create!(name: "Front Door", sector: @sector, access_controller: @ac)
-    @reader = Reader.create!(name: "Card Reader 1", access_controller: @ac, entry_way: @ew)
+    @io_controller = IoController.create!(name: "Panel 1", sector: @sector)
+    @door = Door.create!(name: "Front Door", sector: @sector, logical_parent: @io_controller)
+    @reader = CredReader.create!(name: "Card Reader 1", sector: @sector, physical_parent: @io_controller, logical_parent: @door)
   end
 
   test "GET /credReader/list returns 401 without token" do
@@ -29,7 +29,7 @@ class Api::CredReaderTest < ActionDispatch::IntegrationTest
   end
 
   test "POST /credReader/save creates a new reader" do
-    assert_difference "Reader.count", 1 do
+    assert_difference "CredReader.count", 1 do
       post "/credReader/save", params: { name: "New Reader" }, headers: { "sessionToken" => @token }, as: :json
     end
     assert_response :success
@@ -45,7 +45,7 @@ class Api::CredReaderTest < ActionDispatch::IntegrationTest
   end
 
   test "POST /credReader/delete/{id} deletes by unid" do
-    assert_difference "Reader.count", -1 do
+    assert_difference "CredReader.count", -1 do
       post "/credReader/delete/#{@reader.id}", headers: { "sessionToken" => @token }
     end
     assert_response :success

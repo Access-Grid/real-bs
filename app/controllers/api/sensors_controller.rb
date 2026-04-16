@@ -6,40 +6,39 @@ module Api
         offset: offset,
         max: max || items.size,
         count: total,
-        instanceList: items.map { |s| SensorTranslator.to_flex(s) }
+        instanceList: items.map { |d| SensorTranslator.to_flex(d) }
       }
     end
 
     def save
       attrs = SensorTranslator.from_flex(params.to_unsafe_h)
-      attrs[:access_controller] = default_access_controller
-      attrs[:entry_way] = default_entry_way
+      attrs[:sector] = default_sector
 
-      sensor = Sensor.new(attrs)
-      if sensor.save
-        render json: { instance: SensorTranslator.to_flex(sensor) }
+      device = Sensor.new(attrs)
+      if device.save
+        render json: { instance: SensorTranslator.to_flex(device) }
       else
-        render json: { errors: sensor.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: device.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def update
-      sensor = find_by_id_or_uuid(Sensor, params[:id])
-      return render json: { error: "Not found" }, status: :not_found unless sensor
+      device = find_by_id_or_uuid(Sensor, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless device
 
       attrs = SensorTranslator.from_flex(params.to_unsafe_h)
-      if sensor.update(attrs)
-        render json: { instance: SensorTranslator.to_flex(sensor) }
+      if device.update(attrs)
+        render json: { instance: SensorTranslator.to_flex(device) }
       else
-        render json: { errors: sensor.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: device.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def delete
-      sensor = find_by_id_or_uuid(Sensor, params[:id])
-      return render json: { error: "Not found" }, status: :not_found unless sensor
+      device = find_by_id_or_uuid(Sensor, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless device
 
-      sensor.destroy
+      device.destroy
       render json: {}
     end
 
@@ -50,14 +49,6 @@ module Api
         building = Building.first_or_create!(name: "Default")
         Sector.create!(name: "Default", building: building)
       end
-    end
-
-    def default_access_controller
-      AccessController.first || AccessController.create!(name: "Default", sector: default_sector)
-    end
-
-    def default_entry_way
-      EntryWay.first || EntryWay.create!(name: "Default", sector: default_sector, access_controller: default_access_controller)
     end
   end
 end

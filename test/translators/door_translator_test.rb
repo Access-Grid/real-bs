@@ -4,32 +4,32 @@ class DoorTranslatorTest < ActiveSupport::TestCase
   setup do
     @building = Building.create!(name: "HQ")
     @sector = Sector.create!(name: "Floor 1", building: @building)
-    @ac = AccessController.create!(name: "Panel 1", sector: @sector)
-    @ew = EntryWay.create!(name: "Front Door", sector: @sector, access_controller: @ac)
+    @io_controller = IoController.create!(name: "Panel 1", sector: @sector)
+    @door = Door.create!(name: "Front Door", sector: @sector, logical_parent: @io_controller)
   end
 
   test "to_flex returns devType 5" do
-    result = DoorTranslator.to_flex(@ew)
+    result = DoorTranslator.to_flex(@door)
     assert_equal 5, result[:devType]
   end
 
   test "to_flex maps unid, uuid, name" do
-    result = DoorTranslator.to_flex(@ew)
-    assert_equal @ew.id, result[:unid]
-    assert_equal @ew.uuid, result[:uuid]
+    result = DoorTranslator.to_flex(@door)
+    assert_equal @door.id, result[:unid]
+    assert_equal @door.uuid, result[:uuid]
     assert_equal "Front Door", result[:name]
   end
 
-  test "to_flex includes logicalParent ObjRef for access_controller" do
-    result = DoorTranslator.to_flex(@ew)
-    assert_equal @ac.id, result[:logicalParent][:unid]
-    assert_equal @ac.name, result[:logicalParent][:name]
+  test "to_flex includes logicalParent ObjRef for controller" do
+    result = DoorTranslator.to_flex(@door)
+    assert_equal @io_controller.id, result[:logicalParent][:unid]
+    assert_equal @io_controller.name, result[:logicalParent][:name]
   end
 
   test "to_flex includes logicalChildren for readers and sensors" do
-    reader = Reader.create!(name: "Reader 1", access_controller: @ac, entry_way: @ew)
-    sensor = Sensor.create!(name: "Door Contact", access_controller: @ac, entry_way: @ew)
-    result = DoorTranslator.to_flex(@ew.reload)
+    CredReader.create!(name: "Reader 1", sector: @sector, logical_parent: @door, physical_parent: @io_controller)
+    Sensor.create!(name: "Door Contact", sector: @sector, logical_parent: @door, physical_parent: @io_controller)
+    result = DoorTranslator.to_flex(@door.reload)
     assert_equal 2, result[:logicalChildren].length
   end
 

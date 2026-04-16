@@ -8,8 +8,8 @@ class Api::DoorTest < ActionDispatch::IntegrationTest
 
     @building = Building.create!(name: "HQ")
     @sector = Sector.create!(name: "Floor 1", building: @building)
-    @ac = AccessController.create!(name: "Panel 1", sector: @sector)
-    @ew = EntryWay.create!(name: "Front Door", sector: @sector, access_controller: @ac)
+    @io_controller = IoController.create!(name: "Panel 1", sector: @sector)
+    @door = Door.create!(name: "Front Door", sector: @sector, logical_parent: @io_controller)
   end
 
   test "GET /door/list returns 401 without token" do
@@ -22,14 +22,14 @@ class Api::DoorTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = JSON.parse(response.body)
     assert json["count"] >= 1
-    door = json["instanceList"].find { |d| d["unid"] == @ew.id }
+    door = json["instanceList"].find { |d| d["unid"] == @door.id }
     assert_not_nil door
     assert_equal 5, door["devType"]
-    assert_equal @ew.name, door["name"]
+    assert_equal @door.name, door["name"]
   end
 
   test "POST /door/save creates a new door" do
-    assert_difference "EntryWay.count", 1 do
+    assert_difference "Door.count", 1 do
       post "/door/save", params: { name: "Back Door" }, headers: { "sessionToken" => @token }, as: :json
     end
     assert_response :success
@@ -39,20 +39,20 @@ class Api::DoorTest < ActionDispatch::IntegrationTest
   end
 
   test "POST /door/update/{id} updates by unid" do
-    post "/door/update/#{@ew.id}", params: { name: "Side Door" }, headers: { "sessionToken" => @token }, as: :json
+    post "/door/update/#{@door.id}", params: { name: "Side Door" }, headers: { "sessionToken" => @token }, as: :json
     assert_response :success
-    assert_equal "Side Door", @ew.reload.name
+    assert_equal "Side Door", @door.reload.name
   end
 
   test "POST /door/update/{id} updates by uuid" do
-    post "/door/update/#{@ew.uuid}", params: { name: "UUID Door" }, headers: { "sessionToken" => @token }, as: :json
+    post "/door/update/#{@door.uuid}", params: { name: "UUID Door" }, headers: { "sessionToken" => @token }, as: :json
     assert_response :success
-    assert_equal "UUID Door", @ew.reload.name
+    assert_equal "UUID Door", @door.reload.name
   end
 
   test "POST /door/delete/{id} deletes by unid" do
-    assert_difference "EntryWay.count", -1 do
-      post "/door/delete/#{@ew.id}", headers: { "sessionToken" => @token }
+    assert_difference "Door.count", -1 do
+      post "/door/delete/#{@door.id}", headers: { "sessionToken" => @token }
     end
     assert_response :success
   end

@@ -10,22 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_16_174949) do
-  create_table "access_controllers", force: :cascade do |t|
-    t.string "name"
-    t.string "model"
-    t.string "brand"
-    t.json "metadata"
-    t.json "public_metadata"
-    t.integer "sector_id", null: false
-    t.boolean "is_virtual"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "uuid"
-    t.index ["sector_id"], name: "index_access_controllers_on_sector_id"
-    t.index ["uuid"], name: "index_access_controllers_on_uuid", unique: true
-  end
-
+ActiveRecord::Schema[8.0].define(version: 2026_04_16_180343) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -116,16 +101,29 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_174949) do
     t.index ["person_id"], name: "index_credentials_on_person_id"
   end
 
-  create_table "entry_ways", force: :cascade do |t|
+  create_table "devices", force: :cascade do |t|
+    t.string "type", null: false
     t.string "name"
-    t.integer "sector_id", null: false
-    t.integer "access_controller_id", null: false
+    t.string "uuid"
+    t.boolean "enabled", default: true
+    t.integer "sector_id"
+    t.integer "physical_parent_id"
+    t.integer "logical_parent_id"
+    t.string "brand"
+    t.string "model"
+    t.string "serial_number"
+    t.boolean "is_virtual"
+    t.string "last_known_state"
+    t.datetime "last_state_update"
+    t.json "metadata"
+    t.json "public_metadata"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "uuid"
-    t.index ["access_controller_id"], name: "index_entry_ways_on_access_controller_id"
-    t.index ["sector_id"], name: "index_entry_ways_on_sector_id"
-    t.index ["uuid"], name: "index_entry_ways_on_uuid", unique: true
+    t.index ["logical_parent_id"], name: "index_devices_on_logical_parent_id"
+    t.index ["physical_parent_id"], name: "index_devices_on_physical_parent_id"
+    t.index ["sector_id"], name: "index_devices_on_sector_id"
+    t.index ["type"], name: "index_devices_on_type"
+    t.index ["uuid"], name: "index_devices_on_uuid", unique: true
   end
 
   create_table "groups", force: :cascade do |t|
@@ -147,23 +145,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_174949) do
     t.index ["group_id"], name: "index_people_on_group_id"
   end
 
-  create_table "readers", force: :cascade do |t|
-    t.string "name"
-    t.string "brand"
-    t.string "model"
-    t.string "serial_number"
-    t.integer "access_controller_id", null: false
-    t.string "last_known_state"
-    t.datetime "last_state_update"
-    t.integer "entry_way_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "uuid"
-    t.index ["access_controller_id"], name: "index_readers_on_access_controller_id"
-    t.index ["entry_way_id"], name: "index_readers_on_entry_way_id"
-    t.index ["uuid"], name: "index_readers_on_uuid", unique: true
-  end
-
   create_table "sectors", force: :cascade do |t|
     t.string "name"
     t.integer "building_id", null: false
@@ -174,23 +155,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_174949) do
     t.index ["parent_id"], name: "index_sectors_on_parent_id"
   end
 
-  create_table "sensors", force: :cascade do |t|
-    t.string "name"
-    t.string "brand"
-    t.string "model"
-    t.string "serial_number"
-    t.integer "access_controller_id", null: false
-    t.integer "entry_way_id", null: false
-    t.string "last_known_state"
-    t.datetime "last_state_update"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "uuid"
-    t.index ["access_controller_id"], name: "index_sensors_on_access_controller_id"
-    t.index ["entry_way_id"], name: "index_sensors_on_entry_way_id"
-    t.index ["uuid"], name: "index_sensors_on_uuid", unique: true
-  end
-
   create_table "users", force: :cascade do |t|
     t.string "username", null: false
     t.string "password_digest", null: false
@@ -199,19 +163,15 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_174949) do
     t.index ["username"], name: "index_users_on_username", unique: true
   end
 
-  add_foreign_key "access_controllers", "sectors"
   add_foreign_key "api_sessions", "users"
   add_foreign_key "credential_format_field_bits", "credential_format_fields"
   add_foreign_key "credential_format_parity_bit_ranges", "credential_format_parity_bits"
   add_foreign_key "credentials", "credential_types"
   add_foreign_key "credentials", "people"
-  add_foreign_key "entry_ways", "access_controllers"
-  add_foreign_key "entry_ways", "sectors"
+  add_foreign_key "devices", "devices", column: "logical_parent_id"
+  add_foreign_key "devices", "devices", column: "physical_parent_id"
+  add_foreign_key "devices", "sectors"
   add_foreign_key "people", "groups"
-  add_foreign_key "readers", "access_controllers"
-  add_foreign_key "readers", "entry_ways"
   add_foreign_key "sectors", "buildings"
   add_foreign_key "sectors", "sectors", column: "parent_id"
-  add_foreign_key "sensors", "access_controllers"
-  add_foreign_key "sensors", "entry_ways"
 end

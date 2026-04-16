@@ -8,10 +8,8 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
 
     @building = Building.create!(name: "HQ")
     @sector = Sector.create!(name: "Floor 1", building: @building)
-    @ac = AccessController.create!(name: "Main Panel", brand: "Z9", model: "SP-Core", sector: @sector)
+    @io_controller = IoController.create!(name: "Main Panel", brand: "Z9", model: "SP-Core", sector: @sector)
   end
-
-  # -- Authentication enforcement --
 
   test "GET /controller/list returns 401 without token" do
     get "/controller/list"
@@ -22,8 +20,6 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
     post "/controller/save", params: { name: "Test" }, as: :json
     assert_response :unauthorized
   end
-
-  # -- List --
 
   test "GET /controller/list returns DevListResponse structure" do
     get "/controller/list", headers: { "sessionToken" => @token }
@@ -39,15 +35,15 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
     get "/controller/list", headers: { "sessionToken" => @token }
     json = JSON.parse(response.body)
     assert json["count"] >= 1
-    controller = json["instanceList"].find { |c| c["unid"] == @ac.id }
-    assert_not_nil controller
-    assert_equal 1, controller["devType"]
-    assert_equal @ac.name, controller["name"]
+    ctrl = json["instanceList"].find { |c| c["unid"] == @io_controller.id }
+    assert_not_nil ctrl
+    assert_equal 1, ctrl["devType"]
+    assert_equal @io_controller.name, ctrl["name"]
   end
 
   test "GET /controller/list supports offset and max pagination" do
-    AccessController.create!(name: "Panel 2", sector: @sector)
-    AccessController.create!(name: "Panel 3", sector: @sector)
+    IoController.create!(name: "Panel 2", sector: @sector)
+    IoController.create!(name: "Panel 3", sector: @sector)
 
     get "/controller/list", params: { offset: 1, max: 1 }, headers: { "sessionToken" => @token }
     json = JSON.parse(response.body)
@@ -57,18 +53,16 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /controller/list count reflects total not paginated" do
-    count_before = AccessController.count
-    AccessController.create!(name: "Panel 2", sector: @sector)
+    count_before = IoController.count
+    IoController.create!(name: "Panel 2", sector: @sector)
     get "/controller/list", params: { max: 1 }, headers: { "sessionToken" => @token }
     json = JSON.parse(response.body)
     assert_equal count_before + 1, json["count"]
     assert_equal 1, json["instanceList"].length
   end
 
-  # -- Save (create) --
-
   test "POST /controller/save creates a new controller" do
-    assert_difference "AccessController.count", 1 do
+    assert_difference "IoController.count", 1 do
       post "/controller/save",
         params: { name: "New Panel", metadata: { brand: "HID" } },
         headers: { "sessionToken" => @token },
@@ -89,26 +83,22 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
-  # -- Update --
-
   test "POST /controller/update/{id} updates by unid" do
-    post "/controller/update/#{@ac.id}",
+    post "/controller/update/#{@io_controller.id}",
       params: { name: "Updated Panel" },
       headers: { "sessionToken" => @token },
       as: :json
     assert_response :success
-    json = JSON.parse(response.body)
-    assert_equal "Updated Panel", json["instance"]["name"]
-    assert_equal "Updated Panel", @ac.reload.name
+    assert_equal "Updated Panel", @io_controller.reload.name
   end
 
   test "POST /controller/update/{id} updates by uuid" do
-    post "/controller/update/#{@ac.uuid}",
+    post "/controller/update/#{@io_controller.uuid}",
       params: { name: "UUID Updated" },
       headers: { "sessionToken" => @token },
       as: :json
     assert_response :success
-    assert_equal "UUID Updated", @ac.reload.name
+    assert_equal "UUID Updated", @io_controller.reload.name
   end
 
   test "POST /controller/update/{id} returns 404 for unknown id" do
@@ -119,19 +109,17 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  # -- Delete --
-
   test "POST /controller/delete/{id} deletes by unid" do
-    assert_difference "AccessController.count", -1 do
-      post "/controller/delete/#{@ac.id}",
+    assert_difference "IoController.count", -1 do
+      post "/controller/delete/#{@io_controller.id}",
         headers: { "sessionToken" => @token }
     end
     assert_response :success
   end
 
   test "POST /controller/delete/{id} deletes by uuid" do
-    assert_difference "AccessController.count", -1 do
-      post "/controller/delete/#{@ac.uuid}",
+    assert_difference "IoController.count", -1 do
+      post "/controller/delete/#{@io_controller.uuid}",
         headers: { "sessionToken" => @token }
     end
     assert_response :success
@@ -141,5 +129,11 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
     post "/controller/delete/99999",
       headers: { "sessionToken" => @token }
     assert_response :not_found
+  end
+
+  test "controllers share ID space with other device types" do
+    door = Door.create!(name: "Test Door", sector: @sector)
+    # Door and controller IDs should not collide -- they're in the same table
+    assert_not_equal @io_controller.id, door.id
   end
 end

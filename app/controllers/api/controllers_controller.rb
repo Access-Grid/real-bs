@@ -1,12 +1,12 @@
 module Api
   class ControllersController < BaseController
     def list
-      items, offset, max, total = paginate(AccessController.all)
+      items, offset, max, total = paginate(IoController.all)
       render json: {
         offset: offset,
         max: max || items.size,
         count: total,
-        instanceList: items.map { |ac| ControllerTranslator.to_flex(ac) }
+        instanceList: items.map { |d| ControllerTranslator.to_flex(d) }
       }
     end
 
@@ -14,31 +14,31 @@ module Api
       attrs = ControllerTranslator.from_flex(params.to_unsafe_h)
       attrs[:sector] = default_sector
 
-      ac = AccessController.new(attrs)
-      if ac.save
-        render json: { instance: ControllerTranslator.to_flex(ac) }
+      device = IoController.new(attrs)
+      if device.save
+        render json: { instance: ControllerTranslator.to_flex(device) }
       else
-        render json: { errors: ac.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: device.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def update
-      ac = find_by_id_or_uuid(AccessController, params[:id])
-      return render json: { error: "Not found" }, status: :not_found unless ac
+      device = find_by_id_or_uuid(IoController, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless device
 
       attrs = ControllerTranslator.from_flex(params.to_unsafe_h)
-      if ac.update(attrs)
-        render json: { instance: ControllerTranslator.to_flex(ac) }
+      if device.update(attrs)
+        render json: { instance: ControllerTranslator.to_flex(device) }
       else
-        render json: { errors: ac.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: device.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def delete
-      ac = find_by_id_or_uuid(AccessController, params[:id])
-      return render json: { error: "Not found" }, status: :not_found unless ac
+      device = find_by_id_or_uuid(IoController, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless device
 
-      ac.destroy
+      device.destroy
       render json: {}
     end
 

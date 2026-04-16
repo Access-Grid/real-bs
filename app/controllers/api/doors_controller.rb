@@ -1,45 +1,44 @@
 module Api
   class DoorsController < BaseController
     def list
-      items, offset, max, total = paginate(EntryWay.all)
+      items, offset, max, total = paginate(Door.all)
       render json: {
         offset: offset,
         max: max || items.size,
         count: total,
-        instanceList: items.map { |ew| DoorTranslator.to_flex(ew) }
+        instanceList: items.map { |d| DoorTranslator.to_flex(d) }
       }
     end
 
     def save
       attrs = DoorTranslator.from_flex(params.to_unsafe_h)
       attrs[:sector] = default_sector
-      attrs[:access_controller] = default_access_controller
 
-      ew = EntryWay.new(attrs)
-      if ew.save
-        render json: { instance: DoorTranslator.to_flex(ew) }
+      device = Door.new(attrs)
+      if device.save
+        render json: { instance: DoorTranslator.to_flex(device) }
       else
-        render json: { errors: ew.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: device.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def update
-      ew = find_by_id_or_uuid(EntryWay, params[:id])
-      return render json: { error: "Not found" }, status: :not_found unless ew
+      device = find_by_id_or_uuid(Door, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless device
 
       attrs = DoorTranslator.from_flex(params.to_unsafe_h)
-      if ew.update(attrs)
-        render json: { instance: DoorTranslator.to_flex(ew) }
+      if device.update(attrs)
+        render json: { instance: DoorTranslator.to_flex(device) }
       else
-        render json: { errors: ew.errors.full_messages }, status: :unprocessable_entity
+        render json: { errors: device.errors.full_messages }, status: :unprocessable_entity
       end
     end
 
     def delete
-      ew = find_by_id_or_uuid(EntryWay, params[:id])
-      return render json: { error: "Not found" }, status: :not_found unless ew
+      device = find_by_id_or_uuid(Door, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless device
 
-      ew.destroy
+      device.destroy
       render json: {}
     end
 
@@ -50,10 +49,6 @@ module Api
         building = Building.first_or_create!(name: "Default")
         Sector.create!(name: "Default", building: building)
       end
-    end
-
-    def default_access_controller
-      AccessController.first || AccessController.create!(name: "Default", sector: default_sector)
     end
   end
 end

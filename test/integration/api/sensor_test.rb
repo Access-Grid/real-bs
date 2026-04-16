@@ -8,9 +8,9 @@ class Api::SensorTest < ActionDispatch::IntegrationTest
 
     @building = Building.create!(name: "HQ")
     @sector = Sector.create!(name: "Floor 1", building: @building)
-    @ac = AccessController.create!(name: "Panel 1", sector: @sector)
-    @ew = EntryWay.create!(name: "Front Door", sector: @sector, access_controller: @ac)
-    @sensor = Sensor.create!(name: "Door Contact", access_controller: @ac, entry_way: @ew)
+    @io_controller = IoController.create!(name: "Panel 1", sector: @sector)
+    @door = Door.create!(name: "Front Door", sector: @sector, logical_parent: @io_controller)
+    @sensor = Sensor.create!(name: "Door Contact", sector: @sector, physical_parent: @io_controller, logical_parent: @door)
   end
 
   test "GET /sensor/list returns 401 without token" do

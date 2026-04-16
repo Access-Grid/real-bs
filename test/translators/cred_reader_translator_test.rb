@@ -4,9 +4,9 @@ class CredReaderTranslatorTest < ActiveSupport::TestCase
   setup do
     @building = Building.create!(name: "HQ")
     @sector = Sector.create!(name: "Floor 1", building: @building)
-    @ac = AccessController.create!(name: "Panel 1", sector: @sector)
-    @ew = EntryWay.create!(name: "Front Door", sector: @sector, access_controller: @ac)
-    @reader = Reader.create!(name: "Card Reader 1", brand: "HID", model: "iClass", access_controller: @ac, entry_way: @ew)
+    @io_controller = IoController.create!(name: "Panel 1", sector: @sector)
+    @door = Door.create!(name: "Front Door", sector: @sector, logical_parent: @io_controller)
+    @reader = CredReader.create!(name: "Card Reader 1", brand: "HID", model: "iClass", sector: @sector, physical_parent: @io_controller, logical_parent: @door)
   end
 
   test "to_flex returns devType 4" do
@@ -21,14 +21,14 @@ class CredReaderTranslatorTest < ActiveSupport::TestCase
     assert_equal "Card Reader 1", result[:name]
   end
 
-  test "to_flex includes logicalParent for entry_way" do
+  test "to_flex includes logicalParent for door" do
     result = CredReaderTranslator.to_flex(@reader)
-    assert_equal @ew.id, result[:logicalParent][:unid]
+    assert_equal @door.id, result[:logicalParent][:unid]
   end
 
-  test "to_flex includes physicalParent for access_controller" do
+  test "to_flex includes physicalParent for controller" do
     result = CredReaderTranslator.to_flex(@reader)
-    assert_equal @ac.id, result[:physicalParent][:unid]
+    assert_equal @io_controller.id, result[:physicalParent][:unid]
   end
 
   test "from_flex extracts name and metadata fields" do
