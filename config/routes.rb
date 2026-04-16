@@ -13,6 +13,12 @@ Rails.application.routes.draw do
   scope defaults: { format: :json } do
     post "authenticate" => "api/authentication#create"
     get "api/health" => "api/health#show"
+
+    # Dev: Controller
+    get "controller/list" => "api/controllers#list"
+    post "controller/save" => "api/controllers#save"
+    post "controller/update/:id" => "api/controllers#update"
+    post "controller/delete/:id" => "api/controllers#delete"
   end
 
   # Defines the root path route ("/")
