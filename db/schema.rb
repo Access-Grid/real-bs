@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_02_165720) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_03_152945) do
   create_table "access_controllers", force: :cascade do |t|
     t.string "name"
     t.string "model"
@@ -25,6 +25,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_02_165720) do
   end
 
   create_table "access_paths", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "access_rule_sets", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -58,12 +64,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_02_165720) do
   end
 
   create_table "credential_format_parity_bit_ranges", force: :cascade do |t|
-    t.integer "credential_format_parity_id", null: false
+    t.integer "credential_format_parity_bit_id", null: false
     t.integer "index"
     t.integer "position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["credential_format_parity_id"], name: "idx_on_credential_format_parity_id_aed47f38e7"
+    t.index ["credential_format_parity_bit_id"], name: "idx_on_credential_format_parity_bit_id_aed47f38e7"
   end
 
   create_table "credential_format_parity_bits", force: :cascade do |t|
@@ -168,7 +174,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_02_165720) do
 
   add_foreign_key "access_controllers", "sectors"
   add_foreign_key "credential_format_field_bits", "credential_format_fields"
-  add_foreign_key "credential_format_parity_bit_ranges", "credential_format_parities"
+  add_foreign_key "credential_format_parity_bit_ranges", "credential_format_parity_bits"
   add_foreign_key "credentials", "credential_types"
   add_foreign_key "credentials", "people"
   add_foreign_key "entry_ways", "access_controllers"

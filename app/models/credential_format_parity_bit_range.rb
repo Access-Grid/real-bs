@@ -1,3 +1,3 @@
 class CredentialFormatParityBitRange < ApplicationRecord
-  belongs_to :credential_format_parity
+  belongs_to :credential_format_parity_bit
 end
