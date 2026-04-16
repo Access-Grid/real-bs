@@ -130,4 +130,76 @@ class DoorAccessPrivTranslatorTest < ActiveSupport::TestCase
 
     assert_equal 1, ars.door_access_priv_elements.count
   end
+
+  # -- Schedule ObjRef in elements --
+
+  test "to_flex includes schedule ObjRef in schedRestriction" do
+    sched = Schedule.create!(name: "Business Hours")
+    ars = AccessRuleSet.create!(name: "With Sched")
+    ars.door_access_priv_elements.create!(door: @door, schedule: sched, sched_restriction_invert: false)
+
+    flex = DoorAccessPrivTranslator.to_flex(ars)
+    elem = flex[:elements][0]
+
+    assert_not_nil elem[:schedRestriction][:sched]
+    assert_equal sched.id, elem[:schedRestriction][:sched][:unid]
+    assert_equal "Business Hours", elem[:schedRestriction][:sched][:name]
+    assert_equal "Schedule", elem[:schedRestriction][:sched][:type]
+    assert_equal sched.uuid, elem[:schedRestriction][:sched][:uuid]
+  end
+
+  test "to_flex returns nil sched when no schedule assigned" do
+    ars = AccessRuleSet.create!(name: "No Sched")
+    ars.door_access_priv_elements.create!(door: @door)
+
+    flex = DoorAccessPrivTranslator.to_flex(ars)
+    assert_nil flex[:elements][0][:schedRestriction][:sched]
+  end
+
+  test "save_elements resolves schedule by unid" do
+    sched = Schedule.create!(name: "Sched")
+    ars = AccessRuleSet.create!(name: "Test")
+    elements_json = [
+      {
+        "door" => { "unid" => @door.id },
+        "schedRestriction" => { "sched" => { "unid" => sched.id }, "invert" => false }
+      }
+    ]
+
+    DoorAccessPrivTranslator.save_elements(ars, elements_json)
+
+    el = ars.door_access_priv_elements.first
+    assert_equal sched.id, el.schedule_id
+  end
+
+  test "save_elements resolves schedule by uuid" do
+    sched = Schedule.create!(name: "Sched")
+    ars = AccessRuleSet.create!(name: "Test")
+    elements_json = [
+      {
+        "door" => { "unid" => @door.id },
+        "schedRestriction" => { "sched" => { "uuid" => sched.uuid }, "invert" => false }
+      }
+    ]
+
+    DoorAccessPrivTranslator.save_elements(ars, elements_json)
+
+    el = ars.door_access_priv_elements.first
+    assert_equal sched.id, el.schedule_id
+  end
+
+  test "save_elements sets nil schedule when sched ref is nil" do
+    ars = AccessRuleSet.create!(name: "Test")
+    elements_json = [
+      {
+        "door" => { "unid" => @door.id },
+        "schedRestriction" => { "sched" => nil, "invert" => false }
+      }
+    ]
+
+    DoorAccessPrivTranslator.save_elements(ars, elements_json)
+
+    el = ars.door_access_priv_elements.first
+    assert_nil el.schedule_id
+  end
 end

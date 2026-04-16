@@ -75,6 +75,30 @@ Rails.application.routes.draw do
     post "doorAccessPriv/save" => "api/door_access_privs#save"
     post "doorAccessPriv/update/:id" => "api/door_access_privs#update"
     post "doorAccessPriv/delete/:id" => "api/door_access_privs#delete"
+
+    # Sched (maps to Schedule)
+    get "sched/list" => "api/scheds#list"
+    post "sched/save" => "api/scheds#save"
+    post "sched/update/:id" => "api/scheds#update"
+    post "sched/delete/:id" => "api/scheds#delete"
+
+    # HolType (maps to HolidayType)
+    get "holType/list" => "api/hol_types#list"
+    post "holType/save" => "api/hol_types#save"
+    post "holType/update/:id" => "api/hol_types#update"
+    post "holType/delete/:id" => "api/hol_types#delete"
+
+    # HolCal (maps to HolidayCalendar)
+    get "holCal/list" => "api/hol_cals#list"
+    post "holCal/save" => "api/hol_cals#save"
+    post "holCal/update/:id" => "api/hol_cals#update"
+    post "holCal/delete/:id" => "api/hol_cals#delete"
+
+    # Hol (maps to Holiday)
+    get "hol/list" => "api/hols#list"
+    post "hol/save" => "api/hols#save"
+    post "hol/update/:id" => "api/hols#update"
+    post "hol/delete/:id" => "api/hols#delete"
   end
 
   # Defines the root path route ("/")

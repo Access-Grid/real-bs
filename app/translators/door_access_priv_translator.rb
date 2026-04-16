@@ -36,7 +36,8 @@ class DoorAccessPrivTranslator
 
       ars.door_access_priv_elements.create!(
         door_id: door_id,
-        sched_restriction_invert: el.dig("schedRestriction", "invert") || false
+        sched_restriction_invert: el.dig("schedRestriction", "invert") || false,
+        schedule_id: resolve_schedule_id(el.dig("schedRestriction", "sched"))
       )
     end
   end
@@ -44,7 +45,7 @@ class DoorAccessPrivTranslator
   def self.element_to_flex(el)
     result = { door: obj_ref(el.door) }
     result[:schedRestriction] = {
-      sched: nil,
+      sched: SchedTranslator.obj_ref(el.schedule),
       invert: el.sched_restriction_invert || false
     }
     result
@@ -60,5 +61,15 @@ class DoorAccessPrivTranslator
     end
   end
 
-  private_class_method :element_to_flex, :resolve_door_id
+  def self.resolve_schedule_id(sched_ref)
+    return nil unless sched_ref.is_a?(Hash)
+
+    if sched_ref["unid"]
+      sched_ref["unid"]
+    elsif sched_ref["uuid"]
+      Schedule.find_by(uuid: sched_ref["uuid"])&.id
+    end
+  end
+
+  private_class_method :element_to_flex, :resolve_door_id, :resolve_schedule_id
 end

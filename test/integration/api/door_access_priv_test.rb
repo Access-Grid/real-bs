@@ -219,4 +219,55 @@ class Api::DoorAccessPrivTest < ActionDispatch::IntegrationTest
       headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- Schedule in elements --
+
+  test "POST /doorAccessPriv/save creates element with schedule ObjRef" do
+    sched = Schedule.create!(name: "Business Hours")
+    post "/doorAccessPriv/save",
+      params: {
+        name: "Sched Priv",
+        elements: [
+          { door: { unid: @door.id }, schedRestriction: { sched: { unid: sched.id }, invert: false } }
+        ]
+      },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    elem = json["instance"]["elements"][0]
+    assert_not_nil elem["schedRestriction"]["sched"]
+    assert_equal sched.id, elem["schedRestriction"]["sched"]["unid"]
+    assert_equal "Business Hours", elem["schedRestriction"]["sched"]["name"]
+  end
+
+  test "POST /doorAccessPriv/update/{id} updates element schedule" do
+    sched = Schedule.create!(name: "Night Shift")
+    post "/doorAccessPriv/update/#{@ars.id}",
+      params: {
+        elements: [
+          { door: { unid: @door.id }, schedRestriction: { sched: { unid: sched.id }, invert: true } }
+        ]
+      },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    elem = json["instance"]["elements"][0]
+    assert_equal sched.id, elem["schedRestriction"]["sched"]["unid"]
+    assert_equal true, elem["schedRestriction"]["invert"]
+  end
+
+  test "GET /doorAccessPriv/list shows schedule in elements" do
+    sched = Schedule.create!(name: "Business Hours")
+    @ars.door_access_priv_elements.destroy_all
+    @ars.door_access_priv_elements.create!(door: @door, schedule: sched, sched_restriction_invert: false)
+
+    get "/doorAccessPriv/list", headers: { "sessionToken" => @token }
+    json = JSON.parse(response.body)
+    priv = json["instanceList"].find { |p| p["unid"] == @ars.id }
+    elem = priv["elements"][0]
+    assert_not_nil elem["schedRestriction"]["sched"]
+    assert_equal sched.id, elem["schedRestriction"]["sched"]["unid"]
+  end
 end

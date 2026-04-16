@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_16_220000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_16_230000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -167,14 +167,57 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_220000) do
     t.boolean "sched_restriction_invert", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "schedule_id"
     t.index ["access_rule_set_id"], name: "index_door_access_priv_elements_on_access_rule_set_id"
     t.index ["door_id"], name: "index_door_access_priv_elements_on_door_id"
+    t.index ["schedule_id"], name: "index_door_access_priv_elements_on_schedule_id"
   end
 
   create_table "groups", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "holiday_calendars", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "uuid"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["uuid"], name: "index_holiday_calendars_on_uuid", unique: true
+  end
+
+  create_table "holiday_holiday_types", force: :cascade do |t|
+    t.integer "holiday_id", null: false
+    t.integer "holiday_type_id", null: false
+    t.index ["holiday_id", "holiday_type_id"], name: "idx_hol_hol_types_unique", unique: true
+    t.index ["holiday_id"], name: "index_holiday_holiday_types_on_holiday_id"
+    t.index ["holiday_type_id"], name: "index_holiday_holiday_types_on_holiday_type_id"
+  end
+
+  create_table "holiday_types", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "uuid"
+    t.string "external_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["uuid"], name: "index_holiday_types_on_uuid", unique: true
+  end
+
+  create_table "holidays", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "uuid"
+    t.integer "holiday_calendar_id"
+    t.date "date"
+    t.integer "num_days", default: 1
+    t.boolean "repeat", default: false
+    t.integer "num_years_repeat", default: 0
+    t.boolean "preserve_sched_day", default: false
+    t.boolean "all_hol_types", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["holiday_calendar_id"], name: "index_holidays_on_holiday_calendar_id"
+    t.index ["uuid"], name: "index_holidays_on_uuid", unique: true
   end
 
   create_table "people", force: :cascade do |t|
@@ -188,6 +231,41 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_220000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["group_id"], name: "index_people_on_group_id"
+  end
+
+  create_table "schedule_element_holiday_types", force: :cascade do |t|
+    t.integer "schedule_element_id", null: false
+    t.integer "holiday_type_id", null: false
+    t.index ["holiday_type_id"], name: "index_schedule_element_holiday_types_on_holiday_type_id"
+    t.index ["schedule_element_id", "holiday_type_id"], name: "idx_sched_elem_hol_types_unique", unique: true
+    t.index ["schedule_element_id"], name: "index_schedule_element_holiday_types_on_schedule_element_id"
+  end
+
+  create_table "schedule_elements", force: :cascade do |t|
+    t.integer "schedule_id", null: false
+    t.boolean "holidays", default: false
+    t.boolean "mon", default: false
+    t.boolean "tues", default: false
+    t.boolean "wed", default: false
+    t.boolean "thur", default: false
+    t.boolean "fri", default: false
+    t.boolean "sat", default: false
+    t.boolean "sun", default: false
+    t.string "start_time"
+    t.string "stop_time"
+    t.integer "plus_days", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["schedule_id"], name: "index_schedule_elements_on_schedule_id"
+  end
+
+  create_table "schedules", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "uuid"
+    t.string "external_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["uuid"], name: "index_schedules_on_uuid", unique: true
   end
 
   create_table "sectors", force: :cascade do |t|
@@ -219,7 +297,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_220000) do
   add_foreign_key "devices", "sectors"
   add_foreign_key "door_access_priv_elements", "access_rule_sets"
   add_foreign_key "door_access_priv_elements", "devices", column: "door_id"
+  add_foreign_key "door_access_priv_elements", "schedules"
+  add_foreign_key "holiday_holiday_types", "holiday_types"
+  add_foreign_key "holiday_holiday_types", "holidays"
+  add_foreign_key "holidays", "holiday_calendars"
   add_foreign_key "people", "groups"
+  add_foreign_key "schedule_element_holiday_types", "holiday_types"
+  add_foreign_key "schedule_element_holiday_types", "schedule_elements"
+  add_foreign_key "schedule_elements", "schedules"
   add_foreign_key "sectors", "buildings"
   add_foreign_key "sectors", "sectors", column: "parent_id"
 end
