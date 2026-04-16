@@ -131,6 +131,41 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "POST /controller/save with Dev base fields persists them" do
+    post "/controller/save",
+      params: {
+        name: "Net Panel",
+        address: "10.0.0.50",
+        port: 8080,
+        devMod: 164,
+        devPlatform: 17,
+        externalId: "EXT-NET-1",
+        timeZone: "America/Chicago"
+      },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal "10.0.0.50", json["instance"]["address"]
+    assert_equal 8080, json["instance"]["port"]
+    assert_equal 164, json["instance"]["devMod"]
+    assert_equal 17, json["instance"]["devPlatform"]
+    assert_equal "EXT-NET-1", json["instance"]["externalId"]
+    assert_equal "America/Chicago", json["instance"]["timeZone"]
+  end
+
+  test "POST /controller/update/{id} updates Dev base fields" do
+    post "/controller/update/#{@io_controller.id}",
+      params: { address: "10.0.0.99", port: 9999, devMod: 26 },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    @io_controller.reload
+    assert_equal "10.0.0.99", @io_controller.address
+    assert_equal 9999, @io_controller.port
+    assert_equal 26, @io_controller.dev_mod
+  end
+
   test "controllers share ID space with other device types" do
     door = Door.create!(name: "Test Door", sector: @sector)
     # Door and controller IDs should not collide -- they're in the same table

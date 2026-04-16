@@ -15,6 +15,12 @@ Rails.application.routes.draw do
     get "terminate" => "api/authentication#terminate"
     get "api/health" => "api/health#show"
 
+    # Dev (generic -- all device types)
+    get "dev/list" => "api/devs#list"
+    post "dev/save" => "api/devs#save"
+    post "dev/update/:id" => "api/devs#update"
+    post "dev/delete/:id" => "api/devs#delete"
+
     # Dev: Controller
     get "controller/list" => "api/controllers#list"
     post "controller/save" => "api/controllers#save"

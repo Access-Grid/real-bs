@@ -52,7 +52,84 @@ class ControllerTranslatorTest < ActiveSupport::TestCase
   end
 
   test "from_flex ignores unknown Flex fields" do
-    attrs = ControllerTranslator.from_flex({ "name" => "Panel", "devType" => 1, "port" => 9000 })
+    attrs = ControllerTranslator.from_flex({ "name" => "Panel", "devType" => 1, "bogusField" => "ignored" })
     assert_equal "Panel", attrs[:name]
+    assert_nil attrs[:bogusField]
+  end
+
+  # -- New Dev base fields --
+
+  test "to_flex maps externalId" do
+    @io_controller.update!(external_id: "EXT-001")
+    result = ControllerTranslator.to_flex(@io_controller)
+    assert_equal "EXT-001", result[:externalId]
+  end
+
+  test "to_flex maps address and network fields" do
+    @io_controller.update!(address: "192.168.1.100", port: 9000, speed: 9600, mac_address: "AA:BB:CC:DD:EE:FF")
+    result = ControllerTranslator.to_flex(@io_controller)
+    assert_equal "192.168.1.100", result[:address]
+    assert_equal 9000, result[:port]
+    assert_equal 9600, result[:speed]
+    assert_equal "AA:BB:CC:DD:EE:FF", result[:macAddress]
+  end
+
+  test "to_flex maps devMod, devPlatform, devUse, devSubType" do
+    @io_controller.update!(dev_mod: 164, dev_platform: 17, dev_use: 44, dev_sub_type: 7)
+    result = ControllerTranslator.to_flex(@io_controller)
+    assert_equal 164, result[:devMod]
+    assert_equal 17, result[:devPlatform]
+    assert_equal 44, result[:devUse]
+    assert_equal 7, result[:devSubType]
+  end
+
+  test "to_flex maps timeZone and ignoreDaylightSavings" do
+    @io_controller.update!(time_zone: "America/New_York", ignore_daylight_savings: true)
+    result = ControllerTranslator.to_flex(@io_controller)
+    assert_equal "America/New_York", result[:timeZone]
+    assert_equal true, result[:ignoreDaylightSavings]
+  end
+
+  test "from_flex extracts all Dev base fields" do
+    attrs = ControllerTranslator.from_flex({
+      "name" => "Panel",
+      "externalId" => "EXT-002",
+      "address" => "10.0.0.1",
+      "logicalAddress" => 5,
+      "macAddress" => "11:22:33:44:55:66",
+      "port" => 8080,
+      "speed" => 115200,
+      "devSubType" => 7,
+      "devMod" => 164,
+      "devPlatform" => 17,
+      "devUse" => 44,
+      "timeZone" => "US/Eastern",
+      "ignoreDaylightSavings" => true
+    })
+    assert_equal "Panel", attrs[:name]
+    assert_equal "EXT-002", attrs[:external_id]
+    assert_equal "10.0.0.1", attrs[:address]
+    assert_equal 5, attrs[:logical_address]
+    assert_equal "11:22:33:44:55:66", attrs[:mac_address]
+    assert_equal 8080, attrs[:port]
+    assert_equal 115200, attrs[:speed]
+    assert_equal 7, attrs[:dev_sub_type]
+    assert_equal 164, attrs[:dev_mod]
+    assert_equal 17, attrs[:dev_platform]
+    assert_equal 44, attrs[:dev_use]
+    assert_equal "US/Eastern", attrs[:time_zone]
+    assert_equal true, attrs[:ignore_daylight_savings]
+  end
+
+  test "from_flex resolves physicalParent by unid" do
+    parent = IoController.create!(name: "Parent Panel", sector: @sector)
+    attrs = ControllerTranslator.from_flex({ "name" => "Child", "physicalParent" => { "unid" => parent.id } })
+    assert_equal parent.id, attrs[:physical_parent_id]
+  end
+
+  test "from_flex resolves logicalParent by uuid" do
+    parent = IoController.create!(name: "Parent Panel", sector: @sector)
+    attrs = ControllerTranslator.from_flex({ "name" => "Child", "logicalParent" => { "uuid" => parent.uuid } })
+    assert_equal parent.id, attrs[:logical_parent_id]
   end
 end
