@@ -69,6 +69,12 @@ Rails.application.routes.draw do
     post "basicDataLayout/save" => "api/data_layouts#save"
     post "basicDataLayout/update/:id" => "api/data_layouts#update"
     post "basicDataLayout/delete/:id" => "api/data_layouts#delete"
+
+    # DoorAccessPriv (maps to AccessRuleSet)
+    get "doorAccessPriv/list" => "api/door_access_privs#list"
+    post "doorAccessPriv/save" => "api/door_access_privs#save"
+    post "doorAccessPriv/update/:id" => "api/door_access_privs#update"
+    post "doorAccessPriv/delete/:id" => "api/door_access_privs#delete"
   end
 
   # Defines the root path route ("/")

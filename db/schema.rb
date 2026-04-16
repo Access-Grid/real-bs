@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_16_210000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_16_220000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -21,6 +21,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_210000) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "uuid"
+    t.integer "priv_type", default: 0
+    t.boolean "enabled", default: true
+    t.index ["uuid"], name: "index_access_rule_sets_on_uuid", unique: true
   end
 
   create_table "api_sessions", force: :cascade do |t|
@@ -157,6 +161,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_210000) do
     t.index ["uuid"], name: "index_devices_on_uuid", unique: true
   end
 
+  create_table "door_access_priv_elements", force: :cascade do |t|
+    t.integer "access_rule_set_id", null: false
+    t.integer "door_id", null: false
+    t.boolean "sched_restriction_invert", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["access_rule_set_id"], name: "index_door_access_priv_elements_on_access_rule_set_id"
+    t.index ["door_id"], name: "index_door_access_priv_elements_on_door_id"
+  end
+
   create_table "groups", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -203,6 +217,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_210000) do
   add_foreign_key "devices", "devices", column: "logical_parent_id"
   add_foreign_key "devices", "devices", column: "physical_parent_id"
   add_foreign_key "devices", "sectors"
+  add_foreign_key "door_access_priv_elements", "access_rule_sets"
+  add_foreign_key "door_access_priv_elements", "devices", column: "door_id"
   add_foreign_key "people", "groups"
   add_foreign_key "sectors", "buildings"
   add_foreign_key "sectors", "sectors", column: "parent_id"
