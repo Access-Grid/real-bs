@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_16_230000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_16_240000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -171,6 +171,32 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_230000) do
     t.index ["access_rule_set_id"], name: "index_door_access_priv_elements_on_access_rule_set_id"
     t.index ["door_id"], name: "index_door_access_priv_elements_on_door_id"
     t.index ["schedule_id"], name: "index_door_access_priv_elements_on_schedule_id"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.string "uuid"
+    t.datetime "hw_time"
+    t.datetime "db_time"
+    t.string "hw_time_zone"
+    t.integer "evt_code"
+    t.string "external_evt_code_text"
+    t.string "external_evt_code_id"
+    t.integer "evt_sub_code"
+    t.string "external_sub_code_text"
+    t.string "external_sub_code_id"
+    t.integer "priority"
+    t.string "data"
+    t.boolean "consumed", default: false
+    t.json "evt_modifiers"
+    t.json "evt_dev_ref"
+    t.json "evt_controller_ref"
+    t.json "evt_cred_ref"
+    t.json "evt_sched_ref"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["evt_code"], name: "index_events_on_evt_code"
+    t.index ["hw_time"], name: "index_events_on_hw_time"
+    t.index ["uuid"], name: "index_events_on_uuid", unique: true
   end
 
   create_table "groups", force: :cascade do |t|

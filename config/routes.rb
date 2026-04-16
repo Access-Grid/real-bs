@@ -99,6 +99,10 @@ Rails.application.routes.draw do
     post "hol/save" => "api/hols#save"
     post "hol/update/:id" => "api/hols#update"
     post "hol/delete/:id" => "api/hols#delete"
+
+    # Evt (maps to Event) -- read-only
+    get "evt/list" => "api/evts#list"
+    get "evt/show/:id" => "api/evts#show"
   end
 
   # Defines the root path route ("/")
