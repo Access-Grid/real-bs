@@ -123,6 +123,14 @@ class DbChangeBuilder
       proto.cardPin = card_pin
     end
 
+    # DoorAccessModifiers from JSON column
+    dam = cred.door_access_modifiers
+    if dam.is_a?(Hash) && dam.any?
+      proto.doorAccessModifiers = P::DoorAccessModifiers.new(
+        extDoorTime: dam["extDoorTime"] || false
+      )
+    end
+
     # CredPrivBindings
     cred.cred_priv_bindings.each do |binding|
       cpb = P::CredPrivBinding.new

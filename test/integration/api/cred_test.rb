@@ -161,6 +161,36 @@ class Api::CredTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # -- doorAccessModifiers --
+
+  test "POST /cred/save with doorAccessModifiers persists them" do
+    post "/cred/save",
+      params: { name: "ADA Badge", doorAccessModifiers: { extDoorTime: true } },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal true, json["instance"]["doorAccessModifiers"]["extDoorTime"]
+  end
+
+  test "GET /cred/list returns doorAccessModifiers" do
+    @cred.update!(door_access_modifiers: { "extDoorTime" => true })
+    get "/cred/list", headers: { "sessionToken" => @token }
+    json = JSON.parse(response.body)
+    cred = json["instanceList"].find { |c| c["unid"] == @cred.id }
+    assert_equal true, cred["doorAccessModifiers"]["extDoorTime"]
+  end
+
+  test "POST /cred/update/{id} updates doorAccessModifiers" do
+    post "/cred/update/#{@cred.id}",
+      params: { doorAccessModifiers: { extDoorTime: true } },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    @cred.reload
+    assert_equal true, @cred.door_access_modifiers["extDoorTime"]
+  end
+
   # -- privBindings --
 
   test "POST /cred/save with privBindings creates bindings" do

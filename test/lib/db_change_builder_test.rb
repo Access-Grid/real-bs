@@ -176,6 +176,23 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     assert_not_empty bytes
   end
 
+  test "build_cred with door_access_modifiers" do
+    cred = Credential.create!(
+      name: "ADA Badge",
+      door_access_modifiers: { "extDoorTime" => true }
+    )
+    proto = DbChangeBuilder.build_cred(cred)
+
+    assert_not_nil proto.doorAccessModifiers
+    assert_equal true, proto.doorAccessModifiers.extDoorTime
+  end
+
+  test "build_cred without door_access_modifiers" do
+    cred = Credential.create!(name: "Badge No DAM")
+    proto = DbChangeBuilder.build_cred(cred)
+    assert_nil proto.doorAccessModifiers
+  end
+
   test "build_cred without card_pin" do
     cred = Credential.create!(name: "Badge 3")
     proto = DbChangeBuilder.build_cred(cred)

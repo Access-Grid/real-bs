@@ -103,7 +103,6 @@ Full-stack E2E tests exercise the complete access control pipeline:
 
 #### DevConfig Subtypes
 - [x] **ControllerConfig**: username, password, devInitiatesConnection, encryptionKeyRef, encryptionKeyRefNext, disableEncryption
-- [ ] **DoorConfig**: not defined in swagger (schema referenced but missing) -- stub is correct for now
 - [x] **CredReaderConfig**: (ControllerConfig fields) + commType, tamperType, ledType, serialPortAddress
 - [x] **SensorConfig**: (ControllerConfig fields) + invert
 - [x] **ActuatorConfig**: (ControllerConfig fields) + invert
@@ -111,7 +110,7 @@ Full-stack E2E tests exercise the complete access control pipeline:
 
 #### Cred
 - [x] `privBindings` -- CredPrivBinding join model with priv, schedRestriction, devAsDoorAccessPriv
-- [ ] `doorAccessModifiers` -- missing from translator
+- [x] `doorAccessModifiers` -- JSON column on credentials, stored/served/proto-serialized
 
 #### DoorAccessPriv
 - [ ] Element `unid` -- not emitted in element_to_flex output
@@ -124,7 +123,8 @@ Full-stack E2E tests exercise the complete access control pipeline:
 - [ ] `Cred.credHolder` -- ObjRef to Person; not in community swagger
 - [ ] `CredTemplate.kind`, `CredTemplate.frequency`, `CredTemplate.protocol` -- not in community swagger
 
-### Protobuf / Z9 Open Community Protocol
+### Upstream Schema Gaps (blocked on community spec)
+- [ ] `DoorConfig` -- schema referenced in swagger but definition is missing. Door translator stubs `doorConfig: {}`. Implement when upstream adds the schema.
 - [ ] `Hol` (individual holidays) missing from DbChange proto -- HolCal and HolType are sent but individual Hol entries with dates are not part of the current proto DbChange message. This means Aporta does not receive actual holiday dates, only holiday types and calendar names. Likely a proto spec gap that needs to be addressed upstream.
 
 ### Cross-Cutting

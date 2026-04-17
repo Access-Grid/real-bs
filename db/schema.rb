@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_17_000000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_17_010000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -132,6 +132,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_000000) do
     t.datetime "effective"
     t.datetime "expires"
     t.json "card_pin"
+    t.json "door_access_modifiers"
     t.index ["credential_type_id"], name: "index_credentials_on_credential_type_id"
     t.index ["person_id"], name: "index_credentials_on_person_id"
     t.index ["uuid"], name: "index_credentials_on_uuid", unique: true

@@ -21,6 +21,7 @@ class CredTranslator
       expires: cred.expires&.iso8601,
       cardPin: cred.card_pin || {},
       credTemplate: obj_ref(cred.credential_type),
+      doorAccessModifiers: cred.door_access_modifiers || {},
       credHolder: obj_ref(cred.person),
       privBindings: cred.cred_priv_bindings.map { |b| binding_to_flex(b) }
     }
@@ -34,6 +35,7 @@ class CredTranslator
     attrs[:effective] = json["effective"] if json.key?("effective")
     attrs[:expires] = json["expires"] if json.key?("expires")
     attrs[:card_pin] = json["cardPin"] if json.key?("cardPin")
+    attrs[:door_access_modifiers] = json["doorAccessModifiers"] if json.key?("doorAccessModifiers")
 
     if json.key?("credTemplate")
       ct = json["credTemplate"]

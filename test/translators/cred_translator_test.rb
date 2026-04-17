@@ -130,6 +130,26 @@ class CredTranslatorTest < ActiveSupport::TestCase
     assert_equal person.id, attrs[:person_id]
   end
 
+  test "to_flex maps doorAccessModifiers" do
+    cred = Credential.create!(name: "ADA Badge", door_access_modifiers: { "extDoorTime" => true })
+    flex = CredTranslator.to_flex(cred)
+    assert_equal({ "extDoorTime" => true }, flex[:doorAccessModifiers])
+  end
+
+  test "to_flex returns empty doorAccessModifiers when nil" do
+    cred = Credential.create!(name: "No DAM")
+    flex = CredTranslator.to_flex(cred)
+    assert_equal({}, flex[:doorAccessModifiers])
+  end
+
+  test "from_flex extracts doorAccessModifiers" do
+    attrs = CredTranslator.from_flex({
+      "name" => "Badge",
+      "doorAccessModifiers" => { "extDoorTime" => true }
+    })
+    assert_equal({ "extDoorTime" => true }, attrs[:door_access_modifiers])
+  end
+
   test "from_flex ignores unknown keys" do
     json = { "name" => "Badge", "unknownField" => "ignored" }
     attrs = CredTranslator.from_flex(json)
