@@ -113,11 +113,11 @@ Full-stack E2E tests exercise the complete access control pipeline:
 - [x] `doorAccessModifiers` -- JSON column on credentials, stored/served/proto-serialized
 
 #### DoorAccessPriv
-- [ ] Element `unid` -- not emitted in element_to_flex output
+- [x] Element `unid` -- emitted in element_to_flex output
 - [ ] `externalId` -- missing on AccessRuleSet model/translator
 
 #### SchedElement
-- [ ] Element `unid` -- not emitted in element_to_flex output
+- [x] Element `unid` -- emitted in element_to_flex output
 
 #### Extra Fields (in our implementation but NOT in swagger -- evaluate/remove)
 - [ ] `Cred.credHolder` -- ObjRef to Person; not in community swagger

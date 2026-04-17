@@ -19,6 +19,7 @@ class SchedTranslatorTest < ActiveSupport::TestCase
     assert_equal 1, flex[:elements].length
 
     elem = flex[:elements][0]
+    assert_equal s.schedule_elements.first.id, elem[:unid]
     assert_equal [0, 1, 2, 3, 4], elem[:schedDays]
     assert_equal "09:00", elem[:start]
     assert_equal "17:00", elem[:stop]

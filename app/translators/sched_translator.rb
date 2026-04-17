@@ -45,6 +45,7 @@ class SchedTranslator
 
   def self.element_to_flex(el)
     result = {
+      unid: el.id,
       holidays: el.holidays || false,
       schedDays: days_to_flex(el),
       start: el.start_time,

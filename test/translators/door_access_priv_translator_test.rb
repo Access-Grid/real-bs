@@ -20,6 +20,7 @@ class DoorAccessPrivTranslatorTest < ActiveSupport::TestCase
     assert_equal 1, flex[:elements].length
 
     elem = flex[:elements][0]
+    assert_equal ars.door_access_priv_elements.first.id, elem[:unid]
     assert_not_nil elem[:door]
     assert_equal @door.id, elem[:door][:unid]
     assert_equal "Front Door", elem[:door][:name]

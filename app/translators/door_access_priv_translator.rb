@@ -43,7 +43,7 @@ class DoorAccessPrivTranslator
   end
 
   def self.element_to_flex(el)
-    result = { door: obj_ref(el.door) }
+    result = { unid: el.id, door: obj_ref(el.door) }
     result[:schedRestriction] = {
       sched: SchedTranslator.obj_ref(el.schedule),
       invert: el.sched_restriction_invert || false
