@@ -49,7 +49,6 @@ class DevTranslatorBase
       name: device.name,
       externalId: device.external_id,
       enabled: device.enabled,
-      commFamily: device.comm_family,
       address: device.address,
       logicalAddress: device.logical_address,
       macAddress: device.mac_address,
@@ -90,7 +89,6 @@ class DevTranslatorBase
     attrs[:ignore_daylight_savings] = json["ignoreDaylightSavings"] if json.key?("ignoreDaylightSavings")
     attrs[:lock_version] = json["version"] if json.key?("version")
     attrs[:tag] = json["tag"] if json.key?("tag")
-    attrs[:comm_family] = json["commFamily"] if json.key?("commFamily")
     attrs[:dev_mod_config] = json["devModConfig"] if json.key?("devModConfig")
 
     # Legacy metadata extraction (brand/model/serialNumber nested under metadata)

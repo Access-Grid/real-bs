@@ -134,7 +134,7 @@ Full-stack E2E tests exercise the complete access control pipeline:
 ### Cross-Cutting
 - [x] `version` field -- stored and served across all entities and DevConfig subtypes
 - [x] `tag` field -- stored and served across all entities
-- [x] `commFamily` on Dev -- stored and served
+- [x] `commFamily` on Dev -- removed (not in community swagger)
 - [x] DevConfig `unid` and `version` -- served on all config subtypes
 - [x] `version` optimistic locking -- Rails `lock_version` column, auto-increments on update, 409 Conflict on stale writes
 - [x] ObjRef `type` field aligned to Flex names via `FlexTypeNames` module (IoController->Controller, Schedule->Sched, CredentialType->CredTemplate, HolidayType->HolType, HolidayCalendar->HolCal, CredentialFormat->DataFormat, AccessRuleSet->DoorAccessPriv)
