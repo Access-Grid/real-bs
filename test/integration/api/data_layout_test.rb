@@ -194,4 +194,26 @@ class Api::DataLayoutTest < ActionDispatch::IntegrationTest
       headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- show --
+
+  test "GET /dataLayout/show/{id} returns data layout by unid" do
+    get "/dataLayout/show/#{@dl.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @dl.id, json["instance"]["unid"]
+    assert_equal @dl.name, json["instance"]["name"]
+  end
+
+  test "GET /basicDataLayout/show/{id} returns basic data layout by unid" do
+    get "/basicDataLayout/show/#{@dl.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @dl.id, json["instance"]["unid"]
+  end
+
+  test "GET /dataLayout/show/{id} returns 404 for unknown id" do
+    get "/dataLayout/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

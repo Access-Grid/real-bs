@@ -256,4 +256,19 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
     # Door and controller IDs should not collide -- they're in the same table
     assert_not_equal @io_controller.id, door.id
   end
+
+  # -- show --
+
+  test "GET /controller/show/{id} returns controller by unid" do
+    get "/controller/show/#{@io_controller.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @io_controller.id, json["instance"]["unid"]
+    assert_equal @io_controller.name, json["instance"]["name"]
+  end
+
+  test "GET /controller/show/{id} returns 404 for unknown id" do
+    get "/controller/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

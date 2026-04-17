@@ -10,6 +10,13 @@ module Api
       }
     end
 
+    def show
+      hol = find_by_id_or_uuid(Holiday, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless hol
+
+      render json: { instance: HolTranslator.to_flex(hol) }
+    end
+
     def save
       attrs = HolTranslator.from_flex(params.to_unsafe_h)
       hol = Holiday.new(attrs)

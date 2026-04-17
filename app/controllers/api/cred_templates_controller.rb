@@ -10,6 +10,13 @@ module Api
       }
     end
 
+    def show
+      ct = find_by_id_or_uuid(CredentialType, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless ct
+
+      render json: { instance: CredTemplateTranslator.to_flex(ct) }
+    end
+
     def save
       attrs = CredTemplateTranslator.from_flex(params.to_unsafe_h)
       ct = CredentialType.new(attrs)

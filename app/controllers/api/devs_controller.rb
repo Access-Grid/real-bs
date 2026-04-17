@@ -10,6 +10,14 @@ module Api
       }
     end
 
+    def show
+      device = find_by_id_or_uuid(Device, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless device
+
+      translator = DevTranslatorBase.translator_for(device)
+      render json: { instance: translator.to_flex(device) }
+    end
+
     def save
       dev_type = params[:devType]&.to_i
       klass = DevTranslatorBase.class_for_dev_type(dev_type)

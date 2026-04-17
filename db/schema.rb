@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_17_000000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_17_000001) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -193,6 +193,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_000000) do
     t.json "dev_config"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "external_dev_mod_text"
+    t.string "external_dev_mod_id"
     t.index ["logical_parent_id"], name: "index_devices_on_logical_parent_id"
     t.index ["physical_parent_id"], name: "index_devices_on_physical_parent_id"
     t.index ["sector_id"], name: "index_devices_on_sector_id"

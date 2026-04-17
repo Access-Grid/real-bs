@@ -58,6 +58,8 @@ class DevTranslatorBase
       devSubType: device.dev_sub_type,
       devMod: device.dev_mod,
       devPlatform: device.dev_platform,
+      externalDevModText: device.external_dev_mod_text,
+      externalDevModId: device.external_dev_mod_id,
       devUse: device.dev_use,
       timeZone: device.time_zone,
       ignoreDaylightSavings: device.ignore_daylight_savings,
@@ -81,6 +83,8 @@ class DevTranslatorBase
     attrs[:dev_sub_type] = json["devSubType"] if json.key?("devSubType")
     attrs[:dev_mod] = json["devMod"] if json.key?("devMod")
     attrs[:dev_platform] = json["devPlatform"] if json.key?("devPlatform")
+    attrs[:external_dev_mod_text] = json["externalDevModText"] if json.key?("externalDevModText")
+    attrs[:external_dev_mod_id] = json["externalDevModId"] if json.key?("externalDevModId")
     attrs[:dev_use] = json["devUse"] if json.key?("devUse")
     attrs[:time_zone] = json["timeZone"] if json.key?("timeZone")
     attrs[:ignore_daylight_savings] = json["ignoreDaylightSavings"] if json.key?("ignoreDaylightSavings")

@@ -219,4 +219,19 @@ class Api::SchedTest < ActionDispatch::IntegrationTest
       headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- show --
+
+  test "GET /sched/show/{id} returns schedule by unid" do
+    get "/sched/show/#{@schedule.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @schedule.id, json["instance"]["unid"]
+    assert_equal @schedule.name, json["instance"]["name"]
+  end
+
+  test "GET /sched/show/{id} returns 404 for unknown id" do
+    get "/sched/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

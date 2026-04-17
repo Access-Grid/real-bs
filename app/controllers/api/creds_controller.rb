@@ -10,6 +10,13 @@ module Api
       }
     end
 
+    def show
+      cred = find_by_id_or_uuid(Credential, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless cred
+
+      render json: { instance: CredTranslator.to_flex(cred) }
+    end
+
     def save
       attrs = CredTranslator.from_flex(params.to_unsafe_h)
       cred = Credential.new(attrs)

@@ -96,4 +96,19 @@ class Api::NodeDevTest < ActionDispatch::IntegrationTest
     post "/nodeDev/delete/99999", headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- show --
+
+  test "GET /nodeDev/show/{id} returns node dev by unid" do
+    get "/nodeDev/show/#{@node_dev.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @node_dev.id, json["instance"]["unid"]
+    assert_equal @node_dev.name, json["instance"]["name"]
+  end
+
+  test "GET /nodeDev/show/{id} returns 404 for unknown id" do
+    get "/nodeDev/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

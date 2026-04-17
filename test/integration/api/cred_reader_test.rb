@@ -91,4 +91,19 @@ class Api::CredReaderTest < ActionDispatch::IntegrationTest
     assert_equal 6, @reader.dev_config["commType"]
     assert_equal 2, @reader.dev_config["tamperType"]
   end
+
+  # -- show --
+
+  test "GET /credReader/show/{id} returns cred reader by unid" do
+    get "/credReader/show/#{@reader.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @reader.id, json["instance"]["unid"]
+    assert_equal @reader.name, json["instance"]["name"]
+  end
+
+  test "GET /credReader/show/{id} returns 404 for unknown id" do
+    get "/credReader/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

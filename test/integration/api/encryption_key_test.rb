@@ -134,4 +134,19 @@ class Api::EncryptionKeyTest < ActionDispatch::IntegrationTest
     post "/encryptionKey/delete/99999", headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- show --
+
+  test "GET /encryptionKey/show/{id} returns encryption key by unid" do
+    get "/encryptionKey/show/#{@ek.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @ek.id, json["instance"]["unid"]
+    assert_equal "master-key", json["instance"]["keyIdentifier"]
+  end
+
+  test "GET /encryptionKey/show/{id} returns 404 for unknown id" do
+    get "/encryptionKey/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

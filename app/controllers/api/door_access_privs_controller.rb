@@ -10,6 +10,13 @@ module Api
       }
     end
 
+    def show
+      ars = find_by_id_or_uuid(AccessRuleSet, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless ars
+
+      render json: { instance: DoorAccessPrivTranslator.to_flex(ars) }
+    end
+
     def save
       attrs = DoorAccessPrivTranslator.from_flex(params.to_unsafe_h)
       ars = AccessRuleSet.new(attrs)

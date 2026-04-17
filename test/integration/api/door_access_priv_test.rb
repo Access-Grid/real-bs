@@ -296,4 +296,19 @@ class Api::DoorAccessPrivTest < ActionDispatch::IntegrationTest
     assert_not_nil elem["schedRestriction"]["sched"]
     assert_equal sched.id, elem["schedRestriction"]["sched"]["unid"]
   end
+
+  # -- show --
+
+  test "GET /doorAccessPriv/show/{id} returns priv by unid" do
+    get "/doorAccessPriv/show/#{@ars.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @ars.id, json["instance"]["unid"]
+    assert_equal @ars.name, json["instance"]["name"]
+  end
+
+  test "GET /doorAccessPriv/show/{id} returns 404 for unknown id" do
+    get "/doorAccessPriv/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

@@ -10,6 +10,13 @@ module Api
       }
     end
 
+    def show
+      dl = find_by_id_or_uuid(DataLayout, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless dl
+
+      render json: { instance: BasicDataLayoutTranslator.to_flex(dl) }
+    end
+
     def save
       attrs = BasicDataLayoutTranslator.from_flex(params.to_unsafe_h)
       dl = DataLayout.new(attrs)

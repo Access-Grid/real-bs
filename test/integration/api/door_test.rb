@@ -61,4 +61,64 @@ class Api::DoorTest < ActionDispatch::IntegrationTest
     post "/door/delete/99999", headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- DoorConfig --
+
+  test "POST /door/save with doorConfig stores config" do
+    post "/door/save", params: {
+      name: "Secure Door",
+      doorConfig: {
+        username: "admin",
+        defaultDoorMode: { staticState: 2, allowCard: true },
+        activateStrikeOnRex: true,
+        strikeTime: 5000,
+        heldTime: 30000
+      }
+    }, headers: { "sessionToken" => @token }, as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    cfg = json["instance"]["doorConfig"]
+    assert_equal "admin", cfg["username"]
+    assert_equal({ "staticState" => 2, "allowCard" => true }, cfg["defaultDoorMode"])
+    assert_equal true, cfg["activateStrikeOnRex"]
+    assert_equal 5000, cfg["strikeTime"]
+    assert_equal 30000, cfg["heldTime"]
+  end
+
+  test "GET /door/list returns doorConfig" do
+    @door.update!(dev_config: { "strikeTime" => 7000, "activateStrikeOnRex" => false })
+    get "/door/list", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    door = json["instanceList"].find { |d| d["unid"] == @door.id }
+    assert_equal 7000, door["doorConfig"]["strikeTime"]
+    assert_equal false, door["doorConfig"]["activateStrikeOnRex"]
+  end
+
+  test "POST /door/update with doorConfig updates config" do
+    @door.update!(dev_config: { "strikeTime" => 5000 })
+    post "/door/update/#{@door.id}", params: {
+      doorConfig: { strikeTime: 7000, extendedStrikeTime: 12000 }
+    }, headers: { "sessionToken" => @token }, as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    cfg = json["instance"]["doorConfig"]
+    assert_equal 7000, cfg["strikeTime"]
+    assert_equal 12000, cfg["extendedStrikeTime"]
+  end
+
+  # -- show --
+
+  test "GET /door/show/{id} returns door by unid" do
+    get "/door/show/#{@door.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @door.id, json["instance"]["unid"]
+    assert_equal @door.name, json["instance"]["name"]
+  end
+
+  test "GET /door/show/{id} returns 404 for unknown id" do
+    get "/door/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

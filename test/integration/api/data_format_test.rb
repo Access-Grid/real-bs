@@ -181,4 +181,26 @@ class Api::DataFormatTest < ActionDispatch::IntegrationTest
       headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- show --
+
+  test "GET /dataFormat/show/{id} returns data format by unid" do
+    get "/dataFormat/show/#{@cf.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @cf.id, json["instance"]["unid"]
+    assert_equal @cf.name, json["instance"]["name"]
+  end
+
+  test "GET /binaryFormat/show/{id} returns binary format by unid" do
+    get "/binaryFormat/show/#{@cf.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @cf.id, json["instance"]["unid"]
+  end
+
+  test "GET /dataFormat/show/{id} returns 404 for unknown id" do
+    get "/dataFormat/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

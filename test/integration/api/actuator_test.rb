@@ -128,4 +128,19 @@ class Api::ActuatorTest < ActionDispatch::IntegrationTest
     @actuator.reload
     assert_equal true, @actuator.dev_config["invert"]
   end
+
+  # -- show --
+
+  test "GET /actuator/show/{id} returns actuator by unid" do
+    get "/actuator/show/#{@actuator.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @actuator.id, json["instance"]["unid"]
+    assert_equal @actuator.name, json["instance"]["name"]
+  end
+
+  test "GET /actuator/show/{id} returns 404 for unknown id" do
+    get "/actuator/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

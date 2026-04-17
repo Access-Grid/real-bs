@@ -33,32 +33,33 @@ bundle exec rake e2e:test_access_denied
 
 The swagger spec is at `~/git/z9flex-community/z9flex-swagger-community.yaml`.
 
-### Implemented Endpoints (73 of 73 swagger endpoints)
+### Implemented Endpoints (102 of 102 swagger endpoints)
 
 | Group | Endpoints |
 |-------|-----------|
 | Auth | `POST /authenticate`, `GET /terminate` |
 | Health | `GET /api/health` |
-| Dev (generic) | `GET /dev/list`, `POST /dev/save`, `POST /dev/update/{id}`, `POST /dev/delete/{id}` |
-| Controller | `GET /controller/list`, `POST /controller/save`, `POST /controller/update/{id}`, `POST /controller/delete/{id}` |
-| Door | `GET /door/list`, `POST /door/save`, `POST /door/update/{id}`, `POST /door/delete/{id}` |
-| CredReader | `GET /credReader/list`, `POST /credReader/save`, `POST /credReader/update/{id}`, `POST /credReader/delete/{id}` |
-| Sensor | `GET /sensor/list`, `POST /sensor/save`, `POST /sensor/update/{id}`, `POST /sensor/delete/{id}` |
-| Actuator | `GET /actuator/list`, `POST /actuator/save`, `POST /actuator/update/{id}`, `POST /actuator/delete/{id}` |
-| NodeDev | `GET /nodeDev/list`, `POST /nodeDev/save`, `POST /nodeDev/update/{id}`, `POST /nodeDev/delete/{id}` |
-| Cred | `GET /cred/list`, `POST /cred/save`, `POST /cred/update/{id}`, `POST /cred/delete/{id}` |
-| CredTemplate | `GET /credTemplate/list`, `POST /credTemplate/save`, `POST /credTemplate/update/{id}`, `POST /credTemplate/delete/{id}` |
-| DataFormat | `GET /dataFormat/list`, `POST /dataFormat/save`, `POST /dataFormat/update/{id}`, `POST /dataFormat/delete/{id}` |
-| BinaryFormat | `GET /binaryFormat/list`, `POST /binaryFormat/save`, `POST /binaryFormat/update/{id}`, `POST /binaryFormat/delete/{id}` |
-| DataLayout | `GET /dataLayout/list`, `POST /dataLayout/save`, `POST /dataLayout/update/{id}`, `POST /dataLayout/delete/{id}` |
-| BasicDataLayout | `GET /basicDataLayout/list`, `POST /basicDataLayout/save`, `POST /basicDataLayout/update/{id}`, `POST /basicDataLayout/delete/{id}` |
-| DoorAccessPriv | `GET /doorAccessPriv/list`, `POST /doorAccessPriv/save`, `POST /doorAccessPriv/update/{id}`, `POST /doorAccessPriv/delete/{id}` |
-| Sched | `GET /sched/list`, `POST /sched/save`, `POST /sched/update/{id}`, `POST /sched/delete/{id}` |
-| HolType | `GET /holType/list`, `POST /holType/save`, `POST /holType/update/{id}`, `POST /holType/delete/{id}` |
-| HolCal | `GET /holCal/list`, `POST /holCal/save`, `POST /holCal/update/{id}`, `POST /holCal/delete/{id}` |
-| Hol | `GET /hol/list`, `POST /hol/save`, `POST /hol/update/{id}`, `POST /hol/delete/{id}` |
+| Dev (generic) | `GET /dev/list`, `GET /dev/show/{id}`, `POST /dev/save`, `POST /dev/update/{id}`, `POST /dev/delete/{id}` |
+| Controller | `GET /controller/list`, `GET /controller/show/{id}`, `POST /controller/save`, `POST /controller/update/{id}`, `POST /controller/delete/{id}` |
+| Door | `GET /door/list`, `GET /door/show/{id}`, `POST /door/save`, `POST /door/update/{id}`, `POST /door/delete/{id}` |
+| CredReader | `GET /credReader/list`, `GET /credReader/show/{id}`, `POST /credReader/save`, `POST /credReader/update/{id}`, `POST /credReader/delete/{id}` |
+| Sensor | `GET /sensor/list`, `GET /sensor/show/{id}`, `POST /sensor/save`, `POST /sensor/update/{id}`, `POST /sensor/delete/{id}` |
+| Actuator | `GET /actuator/list`, `GET /actuator/show/{id}`, `POST /actuator/save`, `POST /actuator/update/{id}`, `POST /actuator/delete/{id}` |
+| NodeDev | `GET /nodeDev/list`, `GET /nodeDev/show/{id}`, `POST /nodeDev/save`, `POST /nodeDev/update/{id}`, `POST /nodeDev/delete/{id}` |
+| Cred | `GET /cred/list`, `GET /cred/show/{id}`, `POST /cred/save`, `POST /cred/update/{id}`, `POST /cred/delete/{id}` |
+| CredTemplate | `GET /credTemplate/list`, `GET /credTemplate/show/{id}`, `POST /credTemplate/save`, `POST /credTemplate/update/{id}`, `POST /credTemplate/delete/{id}` |
+| DataFormat | `GET /dataFormat/list`, `GET /dataFormat/show/{id}`, `POST /dataFormat/save`, `POST /dataFormat/update/{id}`, `POST /dataFormat/delete/{id}` |
+| BinaryFormat | `GET /binaryFormat/list`, `GET /binaryFormat/show/{id}`, `POST /binaryFormat/save`, `POST /binaryFormat/update/{id}`, `POST /binaryFormat/delete/{id}` |
+| DataLayout | `GET /dataLayout/list`, `GET /dataLayout/show/{id}`, `POST /dataLayout/save`, `POST /dataLayout/update/{id}`, `POST /dataLayout/delete/{id}` |
+| BasicDataLayout | `GET /basicDataLayout/list`, `GET /basicDataLayout/show/{id}`, `POST /basicDataLayout/save`, `POST /basicDataLayout/update/{id}`, `POST /basicDataLayout/delete/{id}` |
+| DoorAccessPriv | `GET /doorAccessPriv/list`, `GET /doorAccessPriv/show/{id}`, `POST /doorAccessPriv/save`, `POST /doorAccessPriv/update/{id}`, `POST /doorAccessPriv/delete/{id}` |
+| Sched | `GET /sched/list`, `GET /sched/show/{id}`, `POST /sched/save`, `POST /sched/update/{id}`, `POST /sched/delete/{id}` |
+| HolType | `GET /holType/list`, `GET /holType/show/{id}`, `POST /holType/save`, `POST /holType/update/{id}`, `POST /holType/delete/{id}` |
+| HolCal | `GET /holCal/list`, `GET /holCal/show/{id}`, `POST /holCal/save`, `POST /holCal/update/{id}`, `POST /holCal/delete/{id}` |
+| Hol | `GET /hol/list`, `GET /hol/show/{id}`, `POST /hol/save`, `POST /hol/update/{id}`, `POST /hol/delete/{id}` |
 | Evt | `GET /evt/list`, `GET /evt/show/{id}` |
-| EncryptionKey | `GET /encryptionKey/list`, `POST /encryptionKey/save`, `POST /encryptionKey/update/{id}`, `POST /encryptionKey/delete/{id}` |
+| EncryptionKey | `GET /encryptionKey/list`, `GET /encryptionKey/show/{id}`, `POST /encryptionKey/save`, `POST /encryptionKey/update/{id}`, `POST /encryptionKey/delete/{id}` |
+| DevStateRecord | `GET /devStateRecord/list` |
 | DevActions | `GET /json/doorModeChange`, `GET /json/doorMomentaryUnlock` |
 
 ## E2E Test Architecture
@@ -103,6 +104,7 @@ Full-stack E2E tests exercise the complete access control pipeline:
 - [x] **SensorConfig**: (ControllerConfig fields) + invert
 - [x] **ActuatorConfig**: (ControllerConfig fields) + invert
 - [x] **NodeDevConfig**: same fields as ControllerConfig
+- [x] **DoorConfig**: (ControllerConfig fields) + defaultDoorMode, activateStrikeOnRex, strikeTime, extendedStrikeTime, heldTime, extendedHeldTime
 
 #### Cred
 - [x] `privBindings` -- CredPrivBinding join model with priv, schedRestriction, devAsDoorAccessPriv
@@ -118,10 +120,9 @@ Full-stack E2E tests exercise the complete access control pipeline:
 #### Extra Fields (removed -- not in community swagger)
 - [x] `CredTemplate.kind`, `CredTemplate.frequency`, `CredTemplate.protocol` -- removed
 
-### Consider Adding to Community Swagger
+### Consider
 - [ ] `Cred.credHolder` -- ObjRef to Person; useful but not currently in community swagger
-- [ ] `POST /credHolder/import` -- CSV file upload for bulk credential holder import
-- [ ] `DoorConfig` -- schema referenced in swagger but definition is missing. Door translator stubs `doorConfig: {}`. Implement when upstream adds the schema.
+- [ ] Consider aligning remaining Ruby class names with Flex names (e.g., CredentialFormat->DataFormat as model name)
 
 ### Cross-Cutting
 - [x] `version` field -- stored and served across all entities and DevConfig subtypes
@@ -130,4 +131,7 @@ Full-stack E2E tests exercise the complete access control pipeline:
 - [x] DevConfig `unid` and `version` -- served on all config subtypes
 - [x] `version` optimistic locking -- Rails `lock_version` column, auto-increments on update, 409 Conflict on stale writes
 - [x] ObjRef `type` field aligned to Flex names via `FlexTypeNames` module (IoController->Controller, Schedule->Sched, CredentialType->CredTemplate, HolidayType->HolType, HolidayCalendar->HolCal, CredentialFormat->DataFormat, AccessRuleSet->DoorAccessPriv)
-- [ ] Consider aligning remaining Ruby class names with Flex names (e.g., CredentialFormat->DataFormat as model name)
+- [x] `DoorConfig` -- full implementation with defaultDoorMode, activateStrikeOnRex, strikeTime, extendedStrikeTime, heldTime, extendedHeldTime + base config fields
+- [x] `show/{id}` endpoints for all 20 entity types (GET returns `{ instance: <entity> }`)
+- [x] `DevStateRecord` -- read-only endpoint, returns device state records for all devices
+- [x] `Dev.externalDevModText` / `Dev.externalDevModId` -- stored and served on all device types

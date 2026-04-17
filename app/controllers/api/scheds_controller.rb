@@ -10,6 +10,13 @@ module Api
       }
     end
 
+    def show
+      schedule = find_by_id_or_uuid(Schedule, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless schedule
+
+      render json: { instance: SchedTranslator.to_flex(schedule) }
+    end
+
     def save
       attrs = SchedTranslator.from_flex(params.to_unsafe_h)
       schedule = Schedule.new(attrs)

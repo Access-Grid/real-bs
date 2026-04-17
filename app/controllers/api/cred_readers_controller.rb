@@ -10,6 +10,13 @@ module Api
       }
     end
 
+    def show
+      device = find_by_id_or_uuid(CredReader, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless device
+
+      render json: { instance: CredReaderTranslator.to_flex(device) }
+    end
+
     def save
       attrs = CredReaderTranslator.from_flex(params.to_unsafe_h)
       attrs[:sector] = default_sector

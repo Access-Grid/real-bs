@@ -141,4 +141,19 @@ class Api::CredTemplateTest < ActionDispatch::IntegrationTest
       headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- show --
+
+  test "GET /credTemplate/show/{id} returns cred template by unid" do
+    get "/credTemplate/show/#{@ct.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @ct.id, json["instance"]["unid"]
+    assert_equal @ct.name, json["instance"]["name"]
+  end
+
+  test "GET /credTemplate/show/{id} returns 404 for unknown id" do
+    get "/credTemplate/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

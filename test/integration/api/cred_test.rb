@@ -272,4 +272,19 @@ class Api::CredTest < ActionDispatch::IntegrationTest
     end
     assert_response :success
   end
+
+  # -- show --
+
+  test "GET /cred/show/{id} returns credential by unid" do
+    get "/cred/show/#{@cred.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @cred.id, json["instance"]["unid"]
+    assert_equal @cred.name, json["instance"]["name"]
+  end
+
+  test "GET /cred/show/{id} returns 404 for unknown id" do
+    get "/cred/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

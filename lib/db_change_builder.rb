@@ -74,6 +74,8 @@ class DbChangeBuilder
     proto.devSubType = dev.dev_sub_type if dev.dev_sub_type
     proto.devMod = dev.dev_mod if dev.dev_mod
     proto.devPlatform = dev.dev_platform if dev.dev_platform
+    proto.externalDevModText = dev.external_dev_mod_text if dev.external_dev_mod_text.present?
+    proto.externalDevModId = dev.external_dev_mod_id if dev.external_dev_mod_id.present?
     proto.devUse = dev.dev_use if dev.dev_use
     proto.timeZone = dev.time_zone if dev.time_zone.present?
     proto.ignoreDaylightSavings = dev.ignore_daylight_savings if dev.ignore_daylight_savings
@@ -96,6 +98,8 @@ class DbChangeBuilder
       proto.extCredReader = P::CredReader.new(credReaderConfig: build_cred_reader_config(dev))
     when "Sensor"
       proto.extSensor = P::Sensor.new(sensorConfig: build_sensor_config(dev))
+    when "Door"
+      proto.extDoor = P::Door.new(doorConfig: build_door_config(dev))
     when "Actuator"
       proto.extActuator = P::Actuator.new(actuatorConfig: build_actuator_config(dev))
     end
@@ -433,6 +437,31 @@ class DbChangeBuilder
     config
   end
 
+  def self.build_door_config(dev)
+    config = build_base_config(P::DoorConfig.new, dev)
+    cfg = dev.dev_config || {}
+
+    if cfg["defaultDoorMode"].is_a?(Hash)
+      dm = cfg["defaultDoorMode"]
+      door_mode = P::DoorMode.new
+      if dm["staticState"]
+        door_mode.staticState = DOOR_MODE_STATIC_STATE_MAP[dm["staticState"]] || dm["staticState"]
+      end
+      door_mode.allowUniquePin = dm["allowUniquePin"] unless dm["allowUniquePin"].nil?
+      door_mode.allowCard = dm["allowCard"] unless dm["allowCard"].nil?
+      door_mode.requireConfirmingPinWithCard = dm["requireConfirmingPinWithCard"] unless dm["requireConfirmingPinWithCard"].nil?
+      config.defaultDoorMode = door_mode
+    end
+
+    config.activateStrikeOnRex = cfg["activateStrikeOnRex"] if cfg["activateStrikeOnRex"]
+    config.strikeTime = cfg["strikeTime"] if cfg["strikeTime"]
+    config.extendedStrikeTime = cfg["extendedStrikeTime"] if cfg["extendedStrikeTime"]
+    config.heldTime = cfg["heldTime"] if cfg["heldTime"]
+    config.extendedHeldTime = cfg["extendedHeldTime"] if cfg["extendedHeldTime"]
+
+    config
+  end
+
   # CredReaderCommType integer -> proto enum symbol
   CRED_READER_COMM_TYPE_MAP = {
     1 => :CredReaderCommType_RESERVED1,
@@ -457,6 +486,12 @@ class DbChangeBuilder
     1 => :CredReaderLedType_RESERVED1,
     2 => :CredReaderLedType_OSDP,
     3 => :CredReaderLedType_RESERVED3
+  }.freeze
+
+  DOOR_MODE_STATIC_STATE_MAP = {
+    0 => :DoorModeStaticState_LOCKED,
+    1 => :DoorModeStaticState_UNLOCKED,
+    2 => :DoorModeStaticState_ACCESS_CONTROLLED
   }.freeze
 
   # -- Helpers --

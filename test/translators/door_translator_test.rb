@@ -37,4 +37,65 @@ class DoorTranslatorTest < ActiveSupport::TestCase
     attrs = DoorTranslator.from_flex({ "name" => "Back Door" })
     assert_equal "Back Door", attrs[:name]
   end
+
+  # -- DoorConfig --
+
+  test "to_flex returns doorConfig with base fields" do
+    @door.update!(dev_config: { "username" => "door_user", "password" => "dp" })
+    result = DoorTranslator.to_flex(@door)
+    assert_equal "door_user", result[:doorConfig][:username]
+    assert_equal "dp", result[:doorConfig][:password]
+  end
+
+  test "to_flex returns doorConfig with unid and version when no dev_config" do
+    result = DoorTranslator.to_flex(@door)
+    assert_equal @door.id, result[:doorConfig][:unid]
+    assert_equal 0, result[:doorConfig][:version]
+  end
+
+  test "to_flex returns doorConfig with door-specific fields" do
+    @door.update!(dev_config: {
+      "defaultDoorMode" => { "staticState" => 2, "allowCard" => true },
+      "activateStrikeOnRex" => true,
+      "strikeTime" => 5000,
+      "extendedStrikeTime" => 10000,
+      "heldTime" => 30000,
+      "extendedHeldTime" => 60000
+    })
+    result = DoorTranslator.to_flex(@door)
+    cfg = result[:doorConfig]
+    assert_equal({ "staticState" => 2, "allowCard" => true }, cfg[:defaultDoorMode])
+    assert_equal true, cfg[:activateStrikeOnRex]
+    assert_equal 5000, cfg[:strikeTime]
+    assert_equal 10000, cfg[:extendedStrikeTime]
+    assert_equal 30000, cfg[:heldTime]
+    assert_equal 60000, cfg[:extendedHeldTime]
+  end
+
+  test "from_flex extracts doorConfig into dev_config" do
+    attrs = DoorTranslator.from_flex({
+      "name" => "Door",
+      "doorConfig" => {
+        "username" => "admin",
+        "defaultDoorMode" => { "staticState" => 2, "allowCard" => true },
+        "activateStrikeOnRex" => true,
+        "strikeTime" => 5000,
+        "extendedStrikeTime" => 10000,
+        "heldTime" => 30000,
+        "extendedHeldTime" => 60000
+      }
+    })
+    assert_equal "admin", attrs[:dev_config]["username"]
+    assert_equal({ "staticState" => 2, "allowCard" => true }, attrs[:dev_config]["defaultDoorMode"])
+    assert_equal true, attrs[:dev_config]["activateStrikeOnRex"]
+    assert_equal 5000, attrs[:dev_config]["strikeTime"]
+    assert_equal 10000, attrs[:dev_config]["extendedStrikeTime"]
+    assert_equal 30000, attrs[:dev_config]["heldTime"]
+    assert_equal 60000, attrs[:dev_config]["extendedHeldTime"]
+  end
+
+  test "from_flex without doorConfig does not set dev_config" do
+    attrs = DoorTranslator.from_flex({ "name" => "Door" })
+    assert_nil attrs[:dev_config]
+  end
 end

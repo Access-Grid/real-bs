@@ -79,6 +79,18 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     assert_equal true, proto.ignoreDaylightSavings
   end
 
+  test "build_dev includes externalDevModText and externalDevModId" do
+    dev = IoController.create!(
+      name: "External Panel",
+      external_dev_mod_text: "Custom Controller v2",
+      external_dev_mod_id: "CC-V2"
+    )
+    proto = DbChangeBuilder.build_dev(dev)
+
+    assert_equal "Custom Controller v2", proto.externalDevModText
+    assert_equal "CC-V2", proto.externalDevModId
+  end
+
   # -- build_dev with config extensions --
 
   test "build_dev for IoController includes extController with controllerConfig" do
@@ -125,6 +137,39 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     assert_not_nil proto.extActuator
     assert_not_nil proto.extActuator.actuatorConfig
     assert_equal true, proto.extActuator.actuatorConfig.invert
+  end
+
+  test "build_dev for Door includes extDoor with doorConfig" do
+    dev = Door.create!(name: "Main Entry", dev_config: {
+      "defaultDoorMode" => { "staticState" => 2, "allowCard" => true, "requireConfirmingPinWithCard" => false },
+      "activateStrikeOnRex" => true,
+      "strikeTime" => 5000,
+      "extendedStrikeTime" => 10000,
+      "heldTime" => 30000,
+      "extendedHeldTime" => 60000
+    })
+    proto = DbChangeBuilder.build_dev(dev)
+
+    assert_not_nil proto.extDoor
+    cfg = proto.extDoor.doorConfig
+    assert_not_nil cfg
+    assert_not_nil cfg.defaultDoorMode
+    assert_equal :DoorModeStaticState_ACCESS_CONTROLLED, cfg.defaultDoorMode.staticState
+    assert_equal true, cfg.defaultDoorMode.allowCard
+    assert_equal false, cfg.defaultDoorMode.requireConfirmingPinWithCard
+    assert_equal true, cfg.activateStrikeOnRex
+    assert_equal 5000, cfg.strikeTime
+    assert_equal 10000, cfg.extendedStrikeTime
+    assert_equal 30000, cfg.heldTime
+    assert_equal 60000, cfg.extendedHeldTime
+  end
+
+  test "build_dev for Door without dev_config still includes extDoor" do
+    dev = Door.create!(name: "Plain Door")
+    proto = DbChangeBuilder.build_dev(dev)
+
+    assert_not_nil proto.extDoor
+    assert_not_nil proto.extDoor.doorConfig
   end
 
   test "build_dev for IoController without dev_config still includes extController" do

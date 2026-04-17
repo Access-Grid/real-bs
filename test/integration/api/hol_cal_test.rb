@@ -136,4 +136,19 @@ class Api::HolCalTest < ActionDispatch::IntegrationTest
       headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- show --
+
+  test "GET /holCal/show/{id} returns holiday calendar by unid" do
+    get "/holCal/show/#{@hc.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @hc.id, json["instance"]["unid"]
+    assert_equal @hc.name, json["instance"]["name"]
+  end
+
+  test "GET /holCal/show/{id} returns 404 for unknown id" do
+    get "/holCal/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

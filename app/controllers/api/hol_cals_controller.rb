@@ -10,6 +10,13 @@ module Api
       }
     end
 
+    def show
+      hc = find_by_id_or_uuid(HolidayCalendar, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless hc
+
+      render json: { instance: HolCalTranslator.to_flex(hc) }
+    end
+
     def save
       attrs = HolCalTranslator.from_flex(params.to_unsafe_h)
       hc = HolidayCalendar.new(attrs)

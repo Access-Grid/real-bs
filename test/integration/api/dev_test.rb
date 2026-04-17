@@ -197,4 +197,41 @@ class Api::DevTest < ActionDispatch::IntegrationTest
     post "/dev/delete/99999", headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- show --
+
+  test "GET /dev/show/{id} returns device by unid" do
+    get "/dev/show/#{@io_controller.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @io_controller.id, json["instance"]["unid"]
+    assert_equal @io_controller.name, json["instance"]["name"]
+  end
+
+  test "GET /dev/show/{id} returns device by uuid" do
+    get "/dev/show/#{@io_controller.uuid}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @io_controller.id, json["instance"]["unid"]
+  end
+
+  test "GET /dev/show/{id} returns 404 for unknown id" do
+    get "/dev/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
+
+  # -- externalDevMod fields --
+
+  test "POST /dev/save with externalDevMod fields stores and returns them" do
+    post "/dev/save", params: {
+      name: "External Device",
+      devType: 1,
+      externalDevModText: "Custom HW v3",
+      externalDevModId: "CHW-V3"
+    }, headers: { "sessionToken" => @token }, as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal "Custom HW v3", json["instance"]["externalDevModText"]
+    assert_equal "CHW-V3", json["instance"]["externalDevModId"]
+  end
 end

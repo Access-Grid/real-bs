@@ -10,6 +10,13 @@ module Api
       }
     end
 
+    def show
+      ek = find_by_id_or_uuid(EncryptionKey, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless ek
+
+      render json: { instance: EncryptionKeyTranslator.to_flex(ek) }
+    end
+
     def save
       attrs = EncryptionKeyTranslator.from_flex(params.to_unsafe_h)
       ek = EncryptionKey.new(attrs)

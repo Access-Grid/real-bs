@@ -130,4 +130,19 @@ class Api::HolTypeTest < ActionDispatch::IntegrationTest
       headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- show --
+
+  test "GET /holType/show/{id} returns holiday type by unid" do
+    get "/holType/show/#{@ht.id}", headers: { "sessionToken" => @token }
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal @ht.id, json["instance"]["unid"]
+    assert_equal @ht.name, json["instance"]["name"]
+  end
+
+  test "GET /holType/show/{id} returns 404 for unknown id" do
+    get "/holType/show/99999", headers: { "sessionToken" => @token }
+    assert_response :not_found
+  end
 end

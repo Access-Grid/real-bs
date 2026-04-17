@@ -10,6 +10,13 @@ module Api
       }
     end
 
+    def show
+      cf = find_by_id_or_uuid(CredentialFormat, params[:id])
+      return render json: { error: "Not found" }, status: :not_found unless cf
+
+      render json: { instance: BinaryFormatTranslator.to_flex(cf) }
+    end
+
     def save
       attrs = BinaryFormatTranslator.from_flex(params.to_unsafe_h)
       cf = CredentialFormat.new(attrs)
