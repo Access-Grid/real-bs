@@ -6,7 +6,7 @@ class Api::CredTest < ActionDispatch::IntegrationTest
     post "/authenticate", params: { username: "admin", password: "password123" }, as: :json
     @token = JSON.parse(response.body)["sessionToken"]
 
-    @ct = CredentialType.create!(name: "Prox Card", kind: "card")
+    @ct = CredentialType.create!(name: "Prox Card")
     @group = Group.create!(name: "Staff")
     @person = Person.create!(first_name: "Jane", last_name: "Doe", group: @group)
     @cred = Credential.create!(

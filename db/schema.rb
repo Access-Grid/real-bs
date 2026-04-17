@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_17_010000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -24,6 +24,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_010000) do
     t.string "uuid"
     t.integer "priv_type", default: 0
     t.boolean "enabled", default: true
+    t.string "external_id"
     t.index ["uuid"], name: "index_access_rule_sets_on_uuid", unique: true
   end
 
@@ -109,9 +110,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_010000) do
   end
 
   create_table "credential_types", force: :cascade do |t|
-    t.string "kind"
-    t.string "frequency"
-    t.string "protocol"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "name"

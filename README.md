@@ -114,14 +114,14 @@ Full-stack E2E tests exercise the complete access control pipeline:
 
 #### DoorAccessPriv
 - [x] Element `unid` -- emitted in element_to_flex output
-- [ ] `externalId` -- missing on AccessRuleSet model/translator
+- [x] `externalId` -- on AccessRuleSet model/translator
 
 #### SchedElement
 - [x] Element `unid` -- emitted in element_to_flex output
 
 #### Extra Fields (in our implementation but NOT in swagger -- evaluate/remove)
 - [ ] `Cred.credHolder` -- ObjRef to Person; not in community swagger
-- [ ] `CredTemplate.kind`, `CredTemplate.frequency`, `CredTemplate.protocol` -- not in community swagger
+- [x] `CredTemplate.kind`, `CredTemplate.frequency`, `CredTemplate.protocol` -- removed (not in community swagger)
 
 ### Upstream Schema Gaps (blocked on community spec)
 - [ ] `DoorConfig` -- schema referenced in swagger but definition is missing. Door translator stubs `doorConfig: {}`. Implement when upstream adds the schema.

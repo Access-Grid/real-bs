@@ -8,9 +8,6 @@ class Api::CredTemplateTest < ActionDispatch::IntegrationTest
 
     @ct = CredentialType.create!(
       name: "Prox Card",
-      kind: "card",
-      frequency: "125kHz",
-      protocol: "HID",
       priority: 5,
       card_pin_template: { "credNumPresence" => "REQUIRED" }
     )
@@ -48,9 +45,6 @@ class Api::CredTemplateTest < ActionDispatch::IntegrationTest
     assert_not_nil ct
     assert_equal "Prox Card", ct["name"]
     assert_equal 5, ct["priority"]
-    assert_equal "card", ct["kind"]
-    assert_equal "125kHz", ct["frequency"]
-    assert_equal "HID", ct["protocol"]
     assert_equal({ "credNumPresence" => "REQUIRED" }, ct["cardPinTemplate"])
     assert_not_nil ct["uuid"]
   end
@@ -74,9 +68,6 @@ class Api::CredTemplateTest < ActionDispatch::IntegrationTest
         params: {
           name: "Smart Card",
           priority: 3,
-          kind: "card",
-          frequency: "13.56MHz",
-          protocol: "ISO14443A",
           cardPinTemplate: { credNumPresence: "OPTIONAL" }
         },
         headers: { "sessionToken" => @token },

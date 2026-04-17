@@ -220,6 +220,32 @@ class Api::DoorAccessPrivTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  # -- ExternalId --
+
+  test "POST /doorAccessPriv/save with externalId" do
+    post "/doorAccessPriv/save",
+      params: {
+        name: "ExtId Priv",
+        externalId: "EXT-100",
+        elements: [
+          { door: { unid: @door.id } }
+        ]
+      },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal "EXT-100", json["instance"]["externalId"]
+  end
+
+  test "GET /doorAccessPriv/list returns externalId" do
+    @ars.update!(external_id: "EXT-200")
+    get "/doorAccessPriv/list", headers: { "sessionToken" => @token }
+    json = JSON.parse(response.body)
+    priv = json["instanceList"].find { |p| p["unid"] == @ars.id }
+    assert_equal "EXT-200", priv["externalId"]
+  end
+
   # -- Schedule in elements --
 
   test "POST /doorAccessPriv/save creates element with schedule ObjRef" do

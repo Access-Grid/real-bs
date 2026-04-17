@@ -7,13 +7,14 @@ class DoorAccessPrivTranslatorTest < ActiveSupport::TestCase
   end
 
   test "to_flex maps all fields" do
-    ars = AccessRuleSet.create!(name: "Building Access", priv_type: 0, enabled: true)
+    ars = AccessRuleSet.create!(name: "Building Access", external_id: "EXT-DAP-1", priv_type: 0, enabled: true)
     ars.door_access_priv_elements.create!(door: @door, sched_restriction_invert: false)
 
     flex = DoorAccessPrivTranslator.to_flex(ars)
 
     assert_equal ars.id, flex[:unid]
     assert_equal ars.uuid, flex[:uuid]
+    assert_equal "EXT-DAP-1", flex[:externalId]
     assert_equal "Building Access", flex[:name]
     assert_equal 0, flex[:privType]
     assert_equal true, flex[:enabled]
@@ -52,6 +53,7 @@ class DoorAccessPrivTranslatorTest < ActiveSupport::TestCase
   test "from_flex extracts all fields" do
     json = {
       "name" => "Lobby Access",
+      "externalId" => "EXT-DAP-2",
       "privType" => 0,
       "enabled" => false
     }
@@ -59,6 +61,7 @@ class DoorAccessPrivTranslatorTest < ActiveSupport::TestCase
     attrs = DoorAccessPrivTranslator.from_flex(json)
 
     assert_equal "Lobby Access", attrs[:name]
+    assert_equal "EXT-DAP-2", attrs[:external_id]
     assert_equal 0, attrs[:priv_type]
     assert_equal false, attrs[:enabled]
   end
@@ -67,6 +70,7 @@ class DoorAccessPrivTranslatorTest < ActiveSupport::TestCase
     json = { "name" => "Minimal" }
     attrs = DoorAccessPrivTranslator.from_flex(json)
     assert_equal({ name: "Minimal" }, attrs)
+    assert_not attrs.key?(:external_id)
     assert_not attrs.key?(:priv_type)
     assert_not attrs.key?(:enabled)
   end
