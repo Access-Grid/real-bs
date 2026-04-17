@@ -12,7 +12,13 @@ bin/rails db:migrate
 ## Running Tests
 
 ```bash
+# Unit + integration tests (no external deps)
 bundle exec rails test
+
+# E2E tests (requires Aporta + osdp-net-pd-sim)
+bundle exec rake e2e:test
+bundle exec rake e2e:test_access_granted
+bundle exec rake e2e:test_access_denied
 ```
 
 ## Architecture
@@ -55,6 +61,35 @@ The swagger spec is at `~/git/z9flex-community/z9flex-swagger-community.yaml`.
 | EncryptionKey | `GET /encryptionKey/list`, `POST /encryptionKey/save`, `POST /encryptionKey/update/{id}`, `POST /encryptionKey/delete/{id}` |
 | DevActions | `GET /json/doorModeChange`, `GET /json/doorMomentaryUnlock` |
 
+## E2E Test Architecture
+
+Full-stack E2E tests exercise the complete access control pipeline:
+
+```
+ real-bs (this app)       Aporta              OSDP PD Sim
+ +-----------+     protobuf/TCP      +----------+    OSDP/TCP    +----------+
+ | SpCore    | <------ 9723 -------> | .NET     | <--- 9843 ---> | osdp-net |
+ | Server    |                       | controller|               | -pd-sim  |
+ +-----------+                       +----------+                | port 5230|
+                                                                 +----------+
+```
+
+**Components:**
+- **SpCoreServer** (`lib/spcore_server.rb`) -- Protobuf TCP server speaking Z9 Open Community Protocol
+- **DbChangeBuilder** (`lib/db_change_builder.rb`) -- Serializes Rails models to protobuf DbChange messages
+- **Aporta** (`~/git/Aporta`) -- Open-source .NET controller, makes local access decisions
+- **osdp-net-pd-sim** (`~/git/osdp-net-pd-sim`) -- OSDP PD simulator with HTTP control API
+
+**Test flow:**
+1. Start PD sim (OSDP listener + HTTP API)
+2. Start SpCoreServer (protobuf TCP on 9723)
+3. Start Aporta (connects to SpCoreServer + PD sim)
+4. Send DbChange with devices, credentials, access rules, schedules
+5. Trigger card swipe via PD sim HTTP API
+6. Verify ACCESS_GRANTED/DENIED event received back over protobuf
+
+**Prerequisites:** .NET 9.0 SDK, Aporta and osdp-net-pd-sim repos cloned at `~/git/`.
+
 ## TODOs
 
 ### Endpoints
@@ -85,6 +120,9 @@ The swagger spec is at `~/git/z9flex-community/z9flex-swagger-community.yaml`.
 #### Extra Fields (in our implementation but NOT in swagger -- evaluate/remove)
 - [ ] `Cred.credHolder` -- ObjRef to Person; not in community swagger
 - [ ] `CredTemplate.kind`, `CredTemplate.frequency`, `CredTemplate.protocol` -- not in community swagger
+
+### Protobuf / Z9 Open Community Protocol
+- [ ] `Hol` (individual holidays) missing from DbChange proto -- HolCal and HolType are sent but individual Hol entries with dates are not part of the current proto DbChange message. This means Aporta does not receive actual holiday dates, only holiday types and calendar names. Likely a proto spec gap that needs to be addressed upstream.
 
 ### Cross-Cutting
 - [ ] `version` / `tag` fields -- optimistic locking, stubbed across all entities
