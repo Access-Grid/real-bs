@@ -22,11 +22,6 @@ class SpCoreServer
 
   attr_reader :port, :received_events, :received_db_change_resps, :connection
 
-  # Optional callback to modify the DbChange proto before sending to Aporta.
-  # Used to patch known API gaps (e.g., CredReaderConfig OSDP fields).
-  # Signature: ->(db_change) { ... }
-  attr_accessor :db_change_modifier
-
   # auto_sync: when true (default), automatically builds full sync from database
   # and sends to Aporta when it connects. Set to false for unit tests that test
   # protocol mechanics without the full sync lifecycle.
@@ -41,7 +36,6 @@ class SpCoreServer
     @running = false
     @synced = false
     @sync_error = nil
-    @db_change_modifier = nil
   end
 
   def start
@@ -225,9 +219,6 @@ class SpCoreServer
     # Build proto from database
     require_relative "db_change_builder"
     db_change = DbChangeBuilder.build_full_sync
-
-    # Apply any registered modifier (e.g., CredReaderConfig OSDP patch)
-    @db_change_modifier&.call(db_change)
 
     # Send to Aporta and wait for acknowledgment
     request_id = send_db_change(db_change)

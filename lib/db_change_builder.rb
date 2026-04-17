@@ -78,6 +78,9 @@ class DbChangeBuilder
     proto.timeZone = dev.time_zone if dev.time_zone.present?
     proto.ignoreDaylightSavings = dev.ignore_daylight_savings if dev.ignore_daylight_savings
 
+    proto.version = dev.lock_version
+    proto.tag = dev.tag if dev.tag.present?
+
     if dev.respond_to?(:physical_parent_id) && dev.physical_parent_id
       proto.physicalParentUnid = dev.physical_parent_id
     end
@@ -108,6 +111,8 @@ class DbChangeBuilder
       enabled: cred.enabled.nil? ? true : cred.enabled
     )
     proto.uuid = cred.uuid if cred.uuid.present?
+    proto.version = cred.lock_version
+    proto.tag = cred.tag if cred.tag.present?
 
     if cred.credential_type_id
       proto.credTemplateUnid = cred.credential_type_id
@@ -161,6 +166,8 @@ class DbChangeBuilder
       priority: ct.priority || 0
     )
     proto.uuid = ct.uuid if ct.uuid.present?
+    proto.version = ct.lock_version
+    proto.tag = ct.tag if ct.tag.present?
 
     # CardPinTemplate from JSON column
     cpt = ct.card_pin_template
@@ -186,6 +193,8 @@ class DbChangeBuilder
       dataFormatType: :DataFormatType_BINARY
     )
     proto.uuid = cf.uuid if cf.uuid.present?
+    proto.version = cf.lock_version
+    proto.tag = cf.tag if cf.tag.present?
 
     # BinaryFormat extension
     bf = P::BinaryFormat.new(
@@ -242,6 +251,8 @@ class DbChangeBuilder
       enabled: dl.enabled.nil? ? true : dl.enabled
     )
     proto.uuid = dl.uuid if dl.uuid.present?
+    proto.version = dl.lock_version
+    proto.tag = dl.tag if dl.tag.present?
 
     if dl.data_format_id
       proto.extBasicDataLayout = P::BasicDataLayout.new(
@@ -261,6 +272,8 @@ class DbChangeBuilder
       privType: :PrivType_DOOR
     )
     proto.uuid = ars.uuid if ars.uuid.present?
+    proto.version = ars.lock_version
+    proto.tag = ars.tag if ars.tag.present?
 
     dap = P::DoorAccessPriv.new
     if ars.respond_to?(:door_access_priv_elements)
@@ -288,6 +301,8 @@ class DbChangeBuilder
       unid: sched.id
     )
     proto.uuid = sched.uuid if sched.uuid.present?
+    proto.version = sched.lock_version
+    proto.tag = sched.tag if sched.tag.present?
     proto.externalId = sched.external_id if sched.respond_to?(:external_id) && sched.external_id.present?
 
     sched.schedule_elements.each do |el|
@@ -322,6 +337,8 @@ class DbChangeBuilder
   def self.build_hol_type(ht)
     proto = P::HolType.new(name: ht.name, unid: ht.id)
     proto.uuid = ht.uuid if ht.uuid.present?
+    proto.version = ht.lock_version
+    proto.tag = ht.tag if ht.tag.present?
     proto.externalId = ht.external_id if ht.respond_to?(:external_id) && ht.external_id.present?
     proto
   end
@@ -330,6 +347,8 @@ class DbChangeBuilder
   def self.build_hol(hol)
     proto = P::Hol.new(name: hol.name, unid: hol.id)
     proto.uuid = hol.uuid if hol.uuid.present?
+    proto.version = hol.lock_version
+    proto.tag = hol.tag if hol.tag.present?
     proto.holCalUnid = hol.holiday_calendar_id if hol.holiday_calendar_id
     proto.allHolTypes = hol.all_hol_types || false
     proto.numDays = hol.num_days || 1
@@ -354,6 +373,8 @@ class DbChangeBuilder
   def self.build_hol_cal(hc)
     proto = P::HolCal.new(name: hc.name, unid: hc.id)
     proto.uuid = hc.uuid if hc.uuid.present?
+    proto.version = hc.lock_version
+    proto.tag = hc.tag if hc.tag.present?
     proto
   end
 

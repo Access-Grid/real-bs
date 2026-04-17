@@ -135,6 +135,23 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     assert_not_nil proto.extController.controllerConfig
   end
 
+  test "build_dev includes version and tag" do
+    dev = IoController.create!(name: "Panel", tag: "floor-1")
+    dev.update!(name: "Panel Updated")  # bumps lock_version to 1
+    proto = DbChangeBuilder.build_dev(dev.reload)
+
+    assert_equal 1, proto.version
+    assert_equal "floor-1", proto.tag
+  end
+
+  test "build_dev omits tag when nil" do
+    dev = IoController.create!(name: "Panel")
+    proto = DbChangeBuilder.build_dev(dev)
+
+    assert_equal 0, proto.version
+    assert_equal "", proto.tag  # proto3 default
+  end
+
   test "build_dev maps parent hierarchy" do
     controller = IoController.create!(name: "Panel")
     door = Door.create!(name: "Door", logical_parent: controller)
@@ -191,6 +208,14 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     cred = Credential.create!(name: "Badge No DAM")
     proto = DbChangeBuilder.build_cred(cred)
     assert_nil proto.doorAccessModifiers
+  end
+
+  test "build_cred includes version and tag" do
+    cred = Credential.create!(name: "Badge", tag: "vip")
+    proto = DbChangeBuilder.build_cred(cred)
+
+    assert_equal 0, proto.version
+    assert_equal "vip", proto.tag
   end
 
   test "build_cred without card_pin" do
@@ -375,6 +400,14 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
 
   # -- build_sched --
 
+  test "build_sched includes version and tag" do
+    s = Schedule.create!(name: "24/7", tag: "default-sched")
+    proto = DbChangeBuilder.build_sched(s)
+
+    assert_equal 0, proto.version
+    assert_equal "default-sched", proto.tag
+  end
+
   test "build_sched basic" do
     s = Schedule.create!(name: "Business Hours")
     s.schedule_elements.create!(
@@ -408,6 +441,14 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
   end
 
   # -- build_hol_type --
+
+  test "build_hol_type includes version and tag" do
+    ht = HolidayType.create!(name: "Federal", tag: "fed")
+    proto = DbChangeBuilder.build_hol_type(ht)
+
+    assert_equal 0, proto.version
+    assert_equal "fed", proto.tag
+  end
 
   test "build_hol_type" do
     ht = HolidayType.create!(name: "Federal Holiday")
