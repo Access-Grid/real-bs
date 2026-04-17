@@ -119,9 +119,11 @@ Full-stack E2E tests exercise the complete access control pipeline:
 #### SchedElement
 - [x] Element `unid` -- emitted in element_to_flex output
 
-#### Extra Fields (in our implementation but NOT in swagger -- evaluate/remove)
-- [ ] `Cred.credHolder` -- ObjRef to Person; not in community swagger
-- [x] `CredTemplate.kind`, `CredTemplate.frequency`, `CredTemplate.protocol` -- removed (not in community swagger)
+#### Extra Fields (removed -- not in community swagger)
+- [x] `CredTemplate.kind`, `CredTemplate.frequency`, `CredTemplate.protocol` -- removed
+
+### Consider Adding to Community Swagger
+- [ ] `Cred.credHolder` -- ObjRef to Person; useful but not currently in community swagger
 
 ### Upstream Schema Gaps (blocked on community spec)
 - [ ] `DoorConfig` -- schema referenced in swagger but definition is missing. Door translator stubs `doorConfig: {}`. Implement when upstream adds the schema.
@@ -129,4 +131,4 @@ Full-stack E2E tests exercise the complete access control pipeline:
 
 ### Cross-Cutting
 - [ ] `version` / `tag` fields -- optimistic locking, stubbed across all entities
-- [ ] ObjRef `type` field uses Rails model names (e.g., "Schedule") not Flex names ("Sched") -- may need alignment
+- [ ] ObjRef `type` field uses Rails model names (e.g., "Schedule") not Flex names ("Sched") -- consider aligning remaining Ruby class names with Flex: IoController->Controller, Schedule->Sched, CredentialType->CredTemplate, HolidayType->HolType, HolidayCalendar->HolCal, CredentialFormat->DataFormat, AccessRuleSet->DoorAccessPriv
