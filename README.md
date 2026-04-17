@@ -95,10 +95,6 @@ Full-stack E2E tests exercise the complete access control pipeline:
 
 ## TODOs
 
-### Endpoints
-
-- [ ] `POST /credHolder/import` -- CSV file upload for bulk credential holder import
-
 ### Field-Level Gaps
 
 #### DevConfig Subtypes
@@ -124,11 +120,13 @@ Full-stack E2E tests exercise the complete access control pipeline:
 
 ### Consider Adding to Community Swagger
 - [ ] `Cred.credHolder` -- ObjRef to Person; useful but not currently in community swagger
+- [ ] `POST /credHolder/import` -- CSV file upload for bulk credential holder import
 
 ### Upstream Schema Gaps (blocked on community spec)
 - [ ] `DoorConfig` -- schema referenced in swagger but definition is missing. Door translator stubs `doorConfig: {}`. Implement when upstream adds the schema.
 - [ ] `Hol` (individual holidays) missing from DbChange proto -- HolCal and HolType are sent but individual Hol entries with dates are not part of the current proto DbChange message. This means Aporta does not receive actual holiday dates, only holiday types and calendar names. Likely a proto spec gap that needs to be addressed upstream.
 
 ### Cross-Cutting
-- [ ] `version` / `tag` fields -- optimistic locking, stubbed across all entities
-- [ ] ObjRef `type` field uses Rails model names (e.g., "Schedule") not Flex names ("Sched") -- consider aligning remaining Ruby class names with Flex: IoController->Controller, Schedule->Sched, CredentialType->CredTemplate, HolidayType->HolType, HolidayCalendar->HolCal, CredentialFormat->DataFormat, AccessRuleSet->DoorAccessPriv
+- [ ] `version` field -- optimistic locking, stubbed across all entities
+- [ ] `tag` field -- stubbed across all entities
+- [x] ObjRef `type` field aligned to Flex names via `FlexTypeNames` module (IoController->Controller, Schedule->Sched, CredentialType->CredTemplate, HolidayType->HolType, HolidayCalendar->HolCal, CredentialFormat->DataFormat, AccessRuleSet->DoorAccessPriv)

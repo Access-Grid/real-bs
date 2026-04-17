@@ -32,7 +32,7 @@ class HolCalTranslatorTest < ActiveSupport::TestCase
     ref = HolCalTranslator.obj_ref(hc)
     assert_equal hc.id, ref[:unid]
     assert_equal "US Federal", ref[:name]
-    assert_equal "HolidayCalendar", ref[:type]
+    assert_equal "HolCal", ref[:type]
     assert_equal hc.uuid, ref[:uuid]
   end
 end

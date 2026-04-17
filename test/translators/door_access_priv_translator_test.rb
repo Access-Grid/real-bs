@@ -149,7 +149,7 @@ class DoorAccessPrivTranslatorTest < ActiveSupport::TestCase
     assert_not_nil elem[:schedRestriction][:sched]
     assert_equal sched.id, elem[:schedRestriction][:sched][:unid]
     assert_equal "Business Hours", elem[:schedRestriction][:sched][:name]
-    assert_equal "Schedule", elem[:schedRestriction][:sched][:type]
+    assert_equal "Sched", elem[:schedRestriction][:sched][:type]
     assert_equal sched.uuid, elem[:schedRestriction][:sched][:uuid]
   end
 

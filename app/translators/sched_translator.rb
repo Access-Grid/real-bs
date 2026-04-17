@@ -3,7 +3,7 @@ class SchedTranslator
 
   def self.obj_ref(record)
     return nil unless record
-    ref = { unid: record.id, name: record.name, type: record.class.name }
+    ref = { unid: record.id, name: record.name, type: FlexTypeNames.for(record) }
     ref[:uuid] = record.uuid if record.respond_to?(:uuid) && record.uuid
     ref
   end

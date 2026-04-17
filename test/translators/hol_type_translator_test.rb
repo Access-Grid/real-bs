@@ -35,7 +35,7 @@ class HolTypeTranslatorTest < ActiveSupport::TestCase
     ref = HolTypeTranslator.obj_ref(ht)
     assert_equal ht.id, ref[:unid]
     assert_equal "Federal", ref[:name]
-    assert_equal "HolidayType", ref[:type]
+    assert_equal "HolType", ref[:type]
     assert_equal ht.uuid, ref[:uuid]
   end
 end

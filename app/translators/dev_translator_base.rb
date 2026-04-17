@@ -33,7 +33,7 @@ class DevTranslatorBase
     ref = {
       unid: record.id,
       name: record.name,
-      type: record.class.name
+      type: FlexTypeNames.for(record)
     }
     ref[:uuid] = record.uuid if record.respond_to?(:uuid) && record.uuid
     ref

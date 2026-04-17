@@ -6,7 +6,7 @@ class CredTranslator
            elsif record.respond_to?(:first_name)
              [record.first_name, record.last_name].compact.join(" ")
            end
-    ref = { unid: record.id, name: name, type: record.class.name }
+    ref = { unid: record.id, name: name, type: FlexTypeNames.for(record) }
     ref[:uuid] = record.uuid if record.respond_to?(:uuid) && record.uuid
     ref
   end
@@ -111,7 +111,7 @@ class CredTranslator
     return nil unless dev_unid
     dev = Device.find_by(id: dev_unid)
     return nil unless dev
-    ref = { unid: dev.id, name: dev.name, type: dev.class.name }
+    ref = { unid: dev.id, name: dev.name, type: FlexTypeNames.for(dev) }
     ref[:uuid] = dev.uuid if dev.uuid
     ref
   end

@@ -56,7 +56,7 @@ class SchedTranslatorTest < ActiveSupport::TestCase
     assert_equal 1, hol_types.length
     assert_equal ht.id, hol_types[0][:unid]
     assert_equal "Federal", hol_types[0][:name]
-    assert_equal "HolidayType", hol_types[0][:type]
+    assert_equal "HolType", hol_types[0][:type]
     assert_equal ht.uuid, hol_types[0][:uuid]
   end
 
@@ -188,7 +188,7 @@ class SchedTranslatorTest < ActiveSupport::TestCase
     ref = SchedTranslator.obj_ref(s)
     assert_equal s.id, ref[:unid]
     assert_equal "Test", ref[:name]
-    assert_equal "Schedule", ref[:type]
+    assert_equal "Sched", ref[:type]
     assert_equal s.uuid, ref[:uuid]
   end
 end
