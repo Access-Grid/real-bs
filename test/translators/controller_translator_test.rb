@@ -132,4 +132,32 @@ class ControllerTranslatorTest < ActiveSupport::TestCase
     attrs = ControllerTranslator.from_flex({ "name" => "Child", "logicalParent" => { "uuid" => parent.uuid } })
     assert_equal parent.id, attrs[:logical_parent_id]
   end
+
+  # -- ControllerConfig --
+
+  test "to_flex returns controllerConfig with base fields from dev_config" do
+    @io_controller.update!(dev_config: { "username" => "admin", "password" => "secret" })
+    result = ControllerTranslator.to_flex(@io_controller)
+    assert_equal "admin", result[:controllerConfig][:username]
+    assert_equal "secret", result[:controllerConfig][:password]
+  end
+
+  test "to_flex returns empty controllerConfig when no dev_config" do
+    result = ControllerTranslator.to_flex(@io_controller)
+    assert_equal({}, result[:controllerConfig])
+  end
+
+  test "from_flex extracts controllerConfig into dev_config" do
+    attrs = ControllerTranslator.from_flex({
+      "name" => "Panel",
+      "controllerConfig" => { "username" => "admin", "password" => "pass123" }
+    })
+    assert_equal "admin", attrs[:dev_config]["username"]
+    assert_equal "pass123", attrs[:dev_config]["password"]
+  end
+
+  test "from_flex without controllerConfig does not set dev_config" do
+    attrs = ControllerTranslator.from_flex({ "name" => "Panel" })
+    assert_nil attrs[:dev_config]
+  end
 end

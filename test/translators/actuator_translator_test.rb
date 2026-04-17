@@ -21,7 +21,7 @@ class ActuatorTranslatorTest < ActiveSupport::TestCase
     assert_equal "Door Strike", result[:name]
   end
 
-  test "to_flex includes actuatorConfig" do
+  test "to_flex includes empty actuatorConfig when no dev_config" do
     result = ActuatorTranslator.to_flex(@actuator)
     assert_equal({}, result[:actuatorConfig])
   end
@@ -39,5 +39,33 @@ class ActuatorTranslatorTest < ActiveSupport::TestCase
     assert_equal "Relay Output", attrs[:name]
     assert_equal "Z9", attrs[:brand]
     assert_equal "RO-100", attrs[:model]
+  end
+
+  # -- ActuatorConfig --
+
+  test "to_flex returns actuatorConfig with invert" do
+    @actuator.update!(dev_config: { "invert" => true })
+    result = ActuatorTranslator.to_flex(@actuator)
+    assert_equal true, result[:actuatorConfig][:invert]
+  end
+
+  test "to_flex returns actuatorConfig with base fields" do
+    @actuator.update!(dev_config: { "username" => "act_user" })
+    result = ActuatorTranslator.to_flex(@actuator)
+    assert_equal "act_user", result[:actuatorConfig][:username]
+  end
+
+  test "from_flex extracts actuatorConfig into dev_config" do
+    attrs = ActuatorTranslator.from_flex({
+      "name" => "Strike",
+      "actuatorConfig" => { "invert" => true, "username" => "admin" }
+    })
+    assert_equal true, attrs[:dev_config]["invert"]
+    assert_equal "admin", attrs[:dev_config]["username"]
+  end
+
+  test "from_flex without actuatorConfig does not set dev_config" do
+    attrs = ActuatorTranslator.from_flex({ "name" => "Strike" })
+    assert_nil attrs[:dev_config]
   end
 end

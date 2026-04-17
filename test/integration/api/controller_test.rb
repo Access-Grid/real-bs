@@ -166,6 +166,40 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
     assert_equal 26, @io_controller.dev_mod
   end
 
+  # -- ControllerConfig via API --
+
+  test "POST /controller/save with controllerConfig persists config" do
+    post "/controller/save",
+      params: {
+        name: "Config Panel",
+        controllerConfig: { username: "admin", password: "secret123" }
+      },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal "admin", json["instance"]["controllerConfig"]["username"]
+    assert_equal "secret123", json["instance"]["controllerConfig"]["password"]
+  end
+
+  test "GET /controller/list returns controllerConfig" do
+    @io_controller.update!(dev_config: { "username" => "user1" })
+    get "/controller/list", headers: { "sessionToken" => @token }
+    json = JSON.parse(response.body)
+    ctrl = json["instanceList"].find { |c| c["unid"] == @io_controller.id }
+    assert_equal "user1", ctrl["controllerConfig"]["username"]
+  end
+
+  test "POST /controller/update/{id} updates controllerConfig" do
+    post "/controller/update/#{@io_controller.id}",
+      params: { controllerConfig: { username: "new_user" } },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    @io_controller.reload
+    assert_equal "new_user", @io_controller.dev_config["username"]
+  end
+
   test "controllers share ID space with other device types" do
     door = Door.create!(name: "Test Door", sector: @sector)
     # Door and controller IDs should not collide -- they're in the same table

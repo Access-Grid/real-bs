@@ -55,4 +55,34 @@ class Api::SensorTest < ActionDispatch::IntegrationTest
     post "/sensor/delete/99999", headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- SensorConfig via API --
+
+  test "POST /sensor/save with sensorConfig persists invert" do
+    post "/sensor/save",
+      params: { name: "Inverted Sensor", sensorConfig: { invert: true } },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal true, json["instance"]["sensorConfig"]["invert"]
+  end
+
+  test "GET /sensor/list returns sensorConfig" do
+    @sensor.update!(dev_config: { "invert" => true })
+    get "/sensor/list", headers: { "sessionToken" => @token }
+    json = JSON.parse(response.body)
+    sensor = json["instanceList"].find { |s| s["unid"] == @sensor.id }
+    assert_equal true, sensor["sensorConfig"]["invert"]
+  end
+
+  test "POST /sensor/update/{id} updates sensorConfig" do
+    post "/sensor/update/#{@sensor.id}",
+      params: { sensorConfig: { invert: true } },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    @sensor.reload
+    assert_equal true, @sensor.dev_config["invert"]
+  end
 end

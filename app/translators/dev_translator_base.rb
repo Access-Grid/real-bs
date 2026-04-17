@@ -111,5 +111,56 @@ class DevTranslatorBase
     end
   end
 
-  private_class_method :resolve_device_ref
+  # -- DevConfig helpers --
+
+  # Reads dev_config JSON from a device and returns a hash of common config fields
+  # for Flex API output. ObjRef format for encryptionKeyRef/encryptionKeyRefNext.
+  def self.base_config_to_flex(device)
+    cfg = device.dev_config || {}
+    result = {}
+    result[:username] = cfg["username"] if cfg["username"].present?
+    result[:password] = cfg["password"] if cfg["password"].present?
+    result[:devInitiatesConnection] = cfg["devInitiatesConnection"] unless cfg["devInitiatesConnection"].nil?
+    result[:disableEncryption] = cfg["disableEncryption"] unless cfg["disableEncryption"].nil?
+
+    if cfg["encryptionKeyRef"].is_a?(Hash) && cfg["encryptionKeyRef"]["unid"]
+      result[:encryptionKeyRef] = resolve_encryption_key_ref(cfg["encryptionKeyRef"])
+    end
+    if cfg["encryptionKeyRefNext"].is_a?(Hash) && cfg["encryptionKeyRefNext"]["unid"]
+      result[:encryptionKeyRefNext] = resolve_encryption_key_ref(cfg["encryptionKeyRefNext"])
+    end
+
+    result
+  end
+
+  # Extracts common config fields from a Flex API JSON payload under the given key.
+  # Returns a hash suitable for merging into dev_config.
+  def self.base_config_from_flex(json, config_key)
+    cfg = json[config_key]
+    return {} unless cfg.is_a?(Hash)
+
+    result = {}
+    result["username"] = cfg["username"] if cfg.key?("username")
+    result["password"] = cfg["password"] if cfg.key?("password")
+    result["devInitiatesConnection"] = cfg["devInitiatesConnection"] if cfg.key?("devInitiatesConnection")
+    result["disableEncryption"] = cfg["disableEncryption"] if cfg.key?("disableEncryption")
+
+    if cfg["encryptionKeyRef"].is_a?(Hash)
+      result["encryptionKeyRef"] = cfg["encryptionKeyRef"]
+    end
+    if cfg["encryptionKeyRefNext"].is_a?(Hash)
+      result["encryptionKeyRefNext"] = cfg["encryptionKeyRefNext"]
+    end
+
+    result
+  end
+
+  def self.resolve_encryption_key_ref(ref)
+    return nil unless ref.is_a?(Hash) && ref["unid"]
+    key = EncryptionKey.find_by(id: ref["unid"])
+    return nil unless key
+    obj_ref(key)
+  end
+
+  private_class_method :resolve_device_ref, :resolve_encryption_key_ref
 end

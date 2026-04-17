@@ -79,6 +79,62 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     assert_equal true, proto.ignoreDaylightSavings
   end
 
+  # -- build_dev with config extensions --
+
+  test "build_dev for IoController includes extController with controllerConfig" do
+    dev = IoController.create!(name: "Panel", dev_config: { "username" => "admin", "password" => "secret" })
+    proto = DbChangeBuilder.build_dev(dev)
+
+    assert_not_nil proto.extController
+    assert_not_nil proto.extController.controllerConfig
+    assert_equal "admin", proto.extController.controllerConfig.username
+    assert_equal "secret", proto.extController.controllerConfig.password
+  end
+
+  test "build_dev for CredReader includes extCredReader with credReaderConfig" do
+    dev = CredReader.create!(name: "Reader", dev_config: {
+      "commType" => 6,
+      "serialPortAddress" => "localhost:9843",
+      "tamperType" => 2,
+      "ledType" => 2
+    })
+    proto = DbChangeBuilder.build_dev(dev)
+
+    assert_not_nil proto.extCredReader
+    cfg = proto.extCredReader.credReaderConfig
+    assert_not_nil cfg
+    assert_equal :CredReaderCommType_OSDP_HALF_DUPLEX, cfg.commType
+    assert_equal "localhost:9843", cfg.serialPortAddress
+    assert_equal :CredReaderTamperType_OSDP, cfg.tamperType
+    assert_equal :CredReaderLedType_OSDP, cfg.ledType
+  end
+
+  test "build_dev for Sensor includes extSensor with sensorConfig" do
+    dev = Sensor.create!(name: "Contact", dev_config: { "invert" => true })
+    proto = DbChangeBuilder.build_dev(dev)
+
+    assert_not_nil proto.extSensor
+    assert_not_nil proto.extSensor.sensorConfig
+    assert_equal true, proto.extSensor.sensorConfig.invert
+  end
+
+  test "build_dev for Actuator includes extActuator with actuatorConfig" do
+    dev = Actuator.create!(name: "Strike", dev_config: { "invert" => true })
+    proto = DbChangeBuilder.build_dev(dev)
+
+    assert_not_nil proto.extActuator
+    assert_not_nil proto.extActuator.actuatorConfig
+    assert_equal true, proto.extActuator.actuatorConfig.invert
+  end
+
+  test "build_dev for IoController without dev_config still includes extController" do
+    dev = IoController.create!(name: "Panel")
+    proto = DbChangeBuilder.build_dev(dev)
+
+    assert_not_nil proto.extController
+    assert_not_nil proto.extController.controllerConfig
+  end
+
   test "build_dev maps parent hierarchy" do
     controller = IoController.create!(name: "Panel")
     door = Door.create!(name: "Door", logical_parent: controller)

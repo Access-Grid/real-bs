@@ -16,12 +16,6 @@ require "rack"
 #   7. SpCoreServer persists events to Event table
 #   8. Tests verify events via GET /evt/list REST API
 #
-# Known cheat:
-#   CredReaderConfig (commType, serialPortAddress) is not yet in the REST API.
-#   A db_change_modifier callback patches the OSDP config on the proto before
-#   it reaches Aporta. When the CredReaderConfig API gap is closed, this patch
-#   goes away and the pipeline is 100% clean.
-#
 # Components:
 #   1. real-bs SpCoreServer (protobuf TCP, port 9723)
 #   2. Aporta (.NET controller, connects to SpCoreServer and OSDP PD sim)
@@ -224,7 +218,8 @@ class E2EOrchestrator
       physicalParent: { unid: @ids[:panel] },
       logicalParent: { unid: @ids[:door] },
       port: 0,
-      speed: 9600
+      speed: 9600,
+      credReaderConfig: { commType: 6, serialPortAddress: "localhost:#{PD_SIM_OSDP_PORT}" }
     })
     @ids[:reader] = resp["instance"]["unid"]
     puts "    CredReader: unid=#{@ids[:reader]}"
@@ -344,22 +339,6 @@ class E2EOrchestrator
     print "  Starting SpCoreServer on port #{SPCORE_PORT}... "
     require_relative "../spcore_server"
     @server = SpCoreServer.new(port: SPCORE_PORT)
-
-    # CredReaderConfig (commType, serialPortAddress) is not yet in the REST API.
-    # Patch the proto until that API gap is closed.
-    reader_unid = @ids[:reader]
-    @server.db_change_modifier = ->(db_change) do
-      reader_proto = db_change.dev.find { |d| d.unid == reader_unid }
-      if reader_proto
-        reader_proto.extCredReader = proto::CredReader.new(
-          credReaderConfig: proto::CredReaderConfig.new(
-            commType: :CredReaderCommType_OSDP_HALF_DUPLEX,
-            serialPortAddress: "localhost:#{PD_SIM_OSDP_PORT}"
-          )
-        )
-      end
-    end
-
     @server.start
     puts "OK"
   end

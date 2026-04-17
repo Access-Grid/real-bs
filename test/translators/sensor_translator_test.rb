@@ -35,4 +35,37 @@ class SensorTranslatorTest < ActiveSupport::TestCase
     assert_equal "Z9", attrs[:brand]
     assert_equal "XYZ789", attrs[:serial_number]
   end
+
+  # -- SensorConfig --
+
+  test "to_flex returns sensorConfig with invert" do
+    @sensor.update!(dev_config: { "invert" => true })
+    result = SensorTranslator.to_flex(@sensor)
+    assert_equal true, result[:sensorConfig][:invert]
+  end
+
+  test "to_flex returns sensorConfig with base fields" do
+    @sensor.update!(dev_config: { "username" => "sensor_user" })
+    result = SensorTranslator.to_flex(@sensor)
+    assert_equal "sensor_user", result[:sensorConfig][:username]
+  end
+
+  test "to_flex returns empty sensorConfig when no dev_config" do
+    result = SensorTranslator.to_flex(@sensor)
+    assert_equal({}, result[:sensorConfig])
+  end
+
+  test "from_flex extracts sensorConfig into dev_config" do
+    attrs = SensorTranslator.from_flex({
+      "name" => "Sensor",
+      "sensorConfig" => { "invert" => true, "username" => "admin" }
+    })
+    assert_equal true, attrs[:dev_config]["invert"]
+    assert_equal "admin", attrs[:dev_config]["username"]
+  end
+
+  test "from_flex without sensorConfig does not set dev_config" do
+    attrs = SensorTranslator.from_flex({ "name" => "Sensor" })
+    assert_nil attrs[:dev_config]
+  end
 end

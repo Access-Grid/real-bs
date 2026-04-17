@@ -81,6 +81,18 @@ class DbChangeBuilder
       proto.logicalParentUnid = dev.logical_parent_id
     end
 
+    # Device-type-specific config extensions
+    case dev.type
+    when "IoController"
+      proto.extController = P::Controller.new(controllerConfig: build_controller_config(dev))
+    when "CredReader"
+      proto.extCredReader = P::CredReader.new(credReaderConfig: build_cred_reader_config(dev))
+    when "Sensor"
+      proto.extSensor = P::Sensor.new(sensorConfig: build_sensor_config(dev))
+    when "Actuator"
+      proto.extActuator = P::Actuator.new(actuatorConfig: build_actuator_config(dev))
+    end
+
     proto
   end
 
@@ -311,6 +323,87 @@ class DbChangeBuilder
     proto.uuid = hc.uuid if hc.uuid.present?
     proto
   end
+
+  # -- DevConfig Proto Builders --
+
+  def self.build_base_config(proto_config, dev)
+    cfg = dev.dev_config || {}
+    proto_config.username = cfg["username"] if cfg["username"].present?
+    proto_config.password = cfg["password"] if cfg["password"].present?
+    proto_config.devInitiatesConnection = cfg["devInitiatesConnection"] if cfg["devInitiatesConnection"]
+    proto_config.disableEncryption = cfg["disableEncryption"] if cfg["disableEncryption"]
+
+    if cfg["encryptionKeyRef"].is_a?(Hash) && cfg["encryptionKeyRef"]["unid"]
+      proto_config.encryptionKeyRefUnid = cfg["encryptionKeyRef"]["unid"]
+    end
+    if cfg["encryptionKeyRefNext"].is_a?(Hash) && cfg["encryptionKeyRefNext"]["unid"]
+      proto_config.encryptionKeyRefNextUnid = cfg["encryptionKeyRefNext"]["unid"]
+    end
+
+    proto_config
+  end
+
+  def self.build_controller_config(dev)
+    build_base_config(P::ControllerConfig.new, dev)
+  end
+
+  def self.build_cred_reader_config(dev)
+    config = build_base_config(P::CredReaderConfig.new, dev)
+    cfg = dev.dev_config || {}
+
+    if cfg["commType"]
+      config.commType = CRED_READER_COMM_TYPE_MAP[cfg["commType"]] || cfg["commType"]
+    end
+    if cfg["tamperType"]
+      config.tamperType = CRED_READER_TAMPER_TYPE_MAP[cfg["tamperType"]] || cfg["tamperType"]
+    end
+    if cfg["ledType"]
+      config.ledType = CRED_READER_LED_TYPE_MAP[cfg["ledType"]] || cfg["ledType"]
+    end
+    config.serialPortAddress = cfg["serialPortAddress"] if cfg["serialPortAddress"].present?
+
+    config
+  end
+
+  def self.build_sensor_config(dev)
+    config = build_base_config(P::SensorConfig.new, dev)
+    cfg = dev.dev_config || {}
+    config.invert = cfg["invert"] if cfg["invert"]
+    config
+  end
+
+  def self.build_actuator_config(dev)
+    config = build_base_config(P::ActuatorConfig.new, dev)
+    cfg = dev.dev_config || {}
+    config.invert = cfg["invert"] if cfg["invert"]
+    config
+  end
+
+  # CredReaderCommType integer -> proto enum symbol
+  CRED_READER_COMM_TYPE_MAP = {
+    1 => :CredReaderCommType_RESERVED1,
+    2 => :CredReaderCommType_RESERVED2,
+    3 => :CredReaderCommType_RESERVED3,
+    4 => :CredReaderCommType_RESERVED4,
+    5 => :CredReaderCommType_RESERVED5,
+    6 => :CredReaderCommType_OSDP_HALF_DUPLEX,
+    7 => :CredReaderCommType_RESERVED7,
+    8 => :CredReaderCommType_RESERVED8,
+    9 => :CredReaderCommType_RESERVED9,
+    10 => :CredReaderCommType_RESERVED10
+  }.freeze
+
+  CRED_READER_TAMPER_TYPE_MAP = {
+    1 => :CredReaderTamperType_RESERVED1,
+    2 => :CredReaderTamperType_OSDP,
+    3 => :CredReaderTamperType_RESERVED3
+  }.freeze
+
+  CRED_READER_LED_TYPE_MAP = {
+    1 => :CredReaderLedType_RESERVED1,
+    2 => :CredReaderLedType_OSDP,
+    3 => :CredReaderLedType_RESERVED3
+  }.freeze
 
   # -- Helpers --
 

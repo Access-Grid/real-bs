@@ -55,4 +55,40 @@ class Api::CredReaderTest < ActionDispatch::IntegrationTest
     post "/credReader/delete/99999", headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- CredReaderConfig via API --
+
+  test "POST /credReader/save with credReaderConfig persists config" do
+    post "/credReader/save",
+      params: {
+        name: "OSDP Reader",
+        credReaderConfig: { commType: 6, serialPortAddress: "localhost:9843" }
+      },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal 6, json["instance"]["credReaderConfig"]["commType"]
+    assert_equal "localhost:9843", json["instance"]["credReaderConfig"]["serialPortAddress"]
+  end
+
+  test "GET /credReader/list returns credReaderConfig" do
+    @reader.update!(dev_config: { "commType" => 6, "serialPortAddress" => "localhost:9843" })
+    get "/credReader/list", headers: { "sessionToken" => @token }
+    json = JSON.parse(response.body)
+    reader = json["instanceList"].find { |r| r["unid"] == @reader.id }
+    assert_equal 6, reader["credReaderConfig"]["commType"]
+    assert_equal "localhost:9843", reader["credReaderConfig"]["serialPortAddress"]
+  end
+
+  test "POST /credReader/update/{id} updates credReaderConfig" do
+    post "/credReader/update/#{@reader.id}",
+      params: { credReaderConfig: { commType: 6, tamperType: 2 } },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    @reader.reload
+    assert_equal 6, @reader.dev_config["commType"]
+    assert_equal 2, @reader.dev_config["tamperType"]
+  end
 end

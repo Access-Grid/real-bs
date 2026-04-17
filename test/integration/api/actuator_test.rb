@@ -98,4 +98,34 @@ class Api::ActuatorTest < ActionDispatch::IntegrationTest
     post "/actuator/delete/99999", headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- ActuatorConfig via API --
+
+  test "POST /actuator/save with actuatorConfig persists invert" do
+    post "/actuator/save",
+      params: { name: "Inverted Strike", actuatorConfig: { invert: true } },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal true, json["instance"]["actuatorConfig"]["invert"]
+  end
+
+  test "GET /actuator/list returns actuatorConfig" do
+    @actuator.update!(dev_config: { "invert" => true })
+    get "/actuator/list", headers: { "sessionToken" => @token }
+    json = JSON.parse(response.body)
+    act = json["instanceList"].find { |a| a["unid"] == @actuator.id }
+    assert_equal true, act["actuatorConfig"]["invert"]
+  end
+
+  test "POST /actuator/update/{id} updates actuatorConfig" do
+    post "/actuator/update/#{@actuator.id}",
+      params: { actuatorConfig: { invert: true } },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    @actuator.reload
+    assert_equal true, @actuator.dev_config["invert"]
+  end
 end

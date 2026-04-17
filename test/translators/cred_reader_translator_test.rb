@@ -41,4 +41,55 @@ class CredReaderTranslatorTest < ActiveSupport::TestCase
     assert_equal "Signo", attrs[:model]
     assert_equal "ABC123", attrs[:serial_number]
   end
+
+  # -- CredReaderConfig --
+
+  test "to_flex returns credReaderConfig with commType and serialPortAddress" do
+    @reader.update!(dev_config: { "commType" => 6, "serialPortAddress" => "localhost:9843" })
+    result = CredReaderTranslator.to_flex(@reader)
+    assert_equal 6, result[:credReaderConfig][:commType]
+    assert_equal "localhost:9843", result[:credReaderConfig][:serialPortAddress]
+  end
+
+  test "to_flex returns credReaderConfig with tamperType and ledType" do
+    @reader.update!(dev_config: { "tamperType" => 2, "ledType" => 2 })
+    result = CredReaderTranslator.to_flex(@reader)
+    assert_equal 2, result[:credReaderConfig][:tamperType]
+    assert_equal 2, result[:credReaderConfig][:ledType]
+  end
+
+  test "to_flex returns credReaderConfig with base fields" do
+    @reader.update!(dev_config: { "username" => "reader_user", "password" => "rp" })
+    result = CredReaderTranslator.to_flex(@reader)
+    assert_equal "reader_user", result[:credReaderConfig][:username]
+    assert_equal "rp", result[:credReaderConfig][:password]
+  end
+
+  test "to_flex returns empty credReaderConfig when no dev_config" do
+    result = CredReaderTranslator.to_flex(@reader)
+    assert_equal({}, result[:credReaderConfig])
+  end
+
+  test "from_flex extracts credReaderConfig into dev_config" do
+    attrs = CredReaderTranslator.from_flex({
+      "name" => "Reader",
+      "credReaderConfig" => {
+        "commType" => 6,
+        "serialPortAddress" => "localhost:9843",
+        "tamperType" => 2,
+        "ledType" => 2,
+        "username" => "admin"
+      }
+    })
+    assert_equal 6, attrs[:dev_config]["commType"]
+    assert_equal "localhost:9843", attrs[:dev_config]["serialPortAddress"]
+    assert_equal 2, attrs[:dev_config]["tamperType"]
+    assert_equal 2, attrs[:dev_config]["ledType"]
+    assert_equal "admin", attrs[:dev_config]["username"]
+  end
+
+  test "from_flex without credReaderConfig does not set dev_config" do
+    attrs = CredReaderTranslator.from_flex({ "name" => "Reader" })
+    assert_nil attrs[:dev_config]
+  end
 end

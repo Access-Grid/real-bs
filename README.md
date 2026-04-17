@@ -101,13 +101,13 @@ Full-stack E2E tests exercise the complete access control pipeline:
 
 ### Field-Level Gaps
 
-#### DevConfig Subtypes (all currently stubbed as `{}`)
-- [ ] **ControllerConfig**: username, password, devInitiatesConnection, encryptionKeyRef, encryptionKeyRefNext, disableEncryption
+#### DevConfig Subtypes
+- [x] **ControllerConfig**: username, password, devInitiatesConnection, encryptionKeyRef, encryptionKeyRefNext, disableEncryption
 - [ ] **DoorConfig**: not defined in swagger (schema referenced but missing) -- stub is correct for now
-- [ ] **CredReaderConfig**: (ControllerConfig fields) + commType, tamperType, ledType, serialPortAddress -- E2E test uses `db_change_modifier` to patch OSDP fields on the proto as a workaround until this API is implemented
-- [ ] **SensorConfig**: (ControllerConfig fields) + invert
-- [ ] **ActuatorConfig**: (ControllerConfig fields) + invert
-- [ ] **NodeDevConfig**: same fields as ControllerConfig
+- [x] **CredReaderConfig**: (ControllerConfig fields) + commType, tamperType, ledType, serialPortAddress
+- [x] **SensorConfig**: (ControllerConfig fields) + invert
+- [x] **ActuatorConfig**: (ControllerConfig fields) + invert
+- [x] **NodeDevConfig**: same fields as ControllerConfig
 
 #### Cred
 - [x] `privBindings` -- CredPrivBinding join model with priv, schedRestriction, devAsDoorAccessPriv
