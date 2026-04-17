@@ -25,7 +25,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless cf
 
       attrs = BinaryFormatTranslator.from_flex(params.to_unsafe_h)
-      if cf.update(attrs)
+      if update_with_lock(cf, attrs)
         render json: { instance: BinaryFormatTranslator.to_flex(cf) }
       else
         render json: { errors: cf.errors.full_messages }, status: :unprocessable_entity

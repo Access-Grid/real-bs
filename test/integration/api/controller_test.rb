@@ -200,6 +200,57 @@ class Api::ControllerTest < ActionDispatch::IntegrationTest
     assert_equal "new_user", @io_controller.dev_config["username"]
   end
 
+  # -- Optimistic locking --
+
+  test "update increments version" do
+    assert_equal 0, @io_controller.lock_version
+    post "/controller/update/#{@io_controller.id}",
+      params: { name: "V1" },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal 1, json["instance"]["version"]
+    assert_equal 1, @io_controller.reload.lock_version
+  end
+
+  test "update with correct version succeeds" do
+    post "/controller/update/#{@io_controller.id}",
+      params: { name: "V1", version: 0 },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    assert_equal 1, JSON.parse(response.body)["instance"]["version"]
+  end
+
+  test "update with stale version returns 409" do
+    # First update bumps version to 1
+    @io_controller.update!(name: "V1")
+    assert_equal 1, @io_controller.reload.lock_version
+
+    # Try to update with stale version 0
+    post "/controller/update/#{@io_controller.id}",
+      params: { name: "Stale", version: 0 },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :conflict
+    json = JSON.parse(response.body)
+    assert_match(/stale version/, json["error"])
+  end
+
+  test "update without version skips locking check" do
+    @io_controller.update!(name: "V1")
+    assert_equal 1, @io_controller.reload.lock_version
+
+    # Update without sending version -- should succeed (no locking enforced)
+    post "/controller/update/#{@io_controller.id}",
+      params: { name: "No Version Sent" },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    assert_equal "No Version Sent", @io_controller.reload.name
+  end
+
   test "controllers share ID space with other device types" do
     door = Door.create!(name: "Test Door", sector: @sector)
     # Door and controller IDs should not collide -- they're in the same table

@@ -26,7 +26,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless hol
 
       attrs = HolTranslator.from_flex(params.to_unsafe_h)
-      if hol.update(attrs)
+      if update_with_lock(hol, attrs)
         if params.to_unsafe_h.key?("holTypes")
           HolTranslator.save_hol_types(hol, params.to_unsafe_h["holTypes"])
         end

@@ -59,7 +59,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
       t.string "type", null: false
       t.string "name"
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.boolean "enabled", default: true
       t.integer "comm_family"
@@ -101,7 +101,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
     create_table "credential_formats" do |t|
       t.string "name"
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.integer "length"
       t.integer "data_format_type", default: 1
@@ -141,7 +141,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
     create_table "credential_types" do |t|
       t.string "name"
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.integer "priority"
       t.json "card_pin_template"
@@ -152,7 +152,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
     create_table "credentials" do |t|
       t.string "name"
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.references :person, foreign_key: true
       t.references :credential_type, foreign_key: true
@@ -168,7 +168,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
     create_table "data_layouts" do |t|
       t.string "name"
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.integer "layout_type", default: 0
       t.integer "priority"
@@ -183,7 +183,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
     create_table "access_rule_sets" do |t|
       t.string "name"
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.integer "priv_type", default: 0
       t.boolean "enabled", default: true
@@ -195,7 +195,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
     create_table "schedules" do |t|
       t.string "name", null: false
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.string "external_id"
       t.timestamps
@@ -221,7 +221,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
     create_table "holiday_types" do |t|
       t.string "name", null: false
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.string "external_id"
       t.timestamps
@@ -237,7 +237,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
     create_table "holiday_calendars" do |t|
       t.string "name", null: false
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.timestamps
       t.index ["uuid"], unique: true
@@ -246,7 +246,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
     create_table "holidays" do |t|
       t.string "name", null: false
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.references :holiday_calendar, foreign_key: true
       t.date "date"
@@ -286,7 +286,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
 
     create_table "events" do |t|
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.datetime "hw_time"
       t.datetime "db_time"
@@ -313,7 +313,7 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
 
     create_table "encryption_keys" do |t|
       t.string "uuid"
-      t.integer "version_counter", default: 0
+      t.integer "lock_version", default: 0
       t.string "tag"
       t.string "algorithm"
       t.integer "size"

@@ -44,7 +44,7 @@ class DevTranslatorBase
       devType: device.dev_type,
       unid: device.id,
       uuid: device.uuid,
-      version: device.version_counter || 0,
+      version: device.lock_version,
       tag: device.tag,
       name: device.name,
       externalId: device.external_id,
@@ -84,7 +84,7 @@ class DevTranslatorBase
     attrs[:dev_use] = json["devUse"] if json.key?("devUse")
     attrs[:time_zone] = json["timeZone"] if json.key?("timeZone")
     attrs[:ignore_daylight_savings] = json["ignoreDaylightSavings"] if json.key?("ignoreDaylightSavings")
-    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:lock_version] = json["version"] if json.key?("version")
     attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:comm_family] = json["commFamily"] if json.key?("commFamily")
     attrs[:dev_mod_config] = json["devModConfig"] if json.key?("devModConfig")

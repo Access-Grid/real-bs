@@ -3,7 +3,7 @@ class EncryptionKeyTranslator
     {
       unid: ek.id,
       uuid: ek.uuid,
-      version: ek.version_counter || 0,
+      version: ek.lock_version,
       tag: ek.tag,
       algorithm: ek.algorithm,
       size: ek.size,
@@ -14,7 +14,7 @@ class EncryptionKeyTranslator
 
   def self.from_flex(json)
     attrs = {}
-    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:lock_version] = json["version"] if json.key?("version")
     attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:algorithm] = json["algorithm"] if json.key?("algorithm")
     attrs[:size] = json["size"] if json.key?("size")

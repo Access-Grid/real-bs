@@ -10,7 +10,7 @@ class BasicDataLayoutTranslator
     {
       unid: dl.id,
       uuid: dl.uuid,
-      version: dl.version_counter || 0,
+      version: dl.lock_version,
       tag: dl.tag,
       name: dl.name,
       layoutType: dl.layout_type || 0,
@@ -22,7 +22,7 @@ class BasicDataLayoutTranslator
 
   def self.from_flex(json)
     attrs = {}
-    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:lock_version] = json["version"] if json.key?("version")
     attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:name] = json["name"] if json.key?("name")
     attrs[:layout_type] = json["layoutType"] if json.key?("layoutType")

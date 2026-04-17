@@ -25,7 +25,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless dl
 
       attrs = BasicDataLayoutTranslator.from_flex(params.to_unsafe_h)
-      if dl.update(attrs)
+      if update_with_lock(dl, attrs)
         render json: { instance: BasicDataLayoutTranslator.to_flex(dl) }
       else
         render json: { errors: dl.errors.full_messages }, status: :unprocessable_entity

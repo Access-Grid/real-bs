@@ -26,7 +26,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless ars
 
       attrs = DoorAccessPrivTranslator.from_flex(params.to_unsafe_h)
-      if ars.update(attrs)
+      if update_with_lock(ars, attrs)
         if params.to_unsafe_h.key?("elements")
           DoorAccessPrivTranslator.save_elements(ars, params.to_unsafe_h["elements"])
         end

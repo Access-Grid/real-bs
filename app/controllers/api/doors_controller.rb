@@ -27,7 +27,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless device
 
       attrs = DoorTranslator.from_flex(params.to_unsafe_h)
-      if device.update(attrs)
+      if update_with_lock(device, attrs)
         render json: { instance: DoorTranslator.to_flex(device) }
       else
         render json: { errors: device.errors.full_messages }, status: :unprocessable_entity

@@ -3,7 +3,7 @@ class BinaryFormatTranslator
     {
       unid: cf.id,
       uuid: cf.uuid,
-      version: cf.version_counter || 0,
+      version: cf.lock_version,
       tag: cf.tag,
       name: cf.name,
       dataFormatType: cf.data_format_type || 1,
@@ -16,7 +16,7 @@ class BinaryFormatTranslator
 
   def self.from_flex(json)
     attrs = {}
-    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:lock_version] = json["version"] if json.key?("version")
     attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:name] = json["name"] if json.key?("name")
     attrs[:data_format_type] = json["dataFormatType"] if json.key?("dataFormatType")

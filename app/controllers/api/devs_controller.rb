@@ -33,7 +33,7 @@ module Api
 
       translator = DevTranslatorBase.translator_for(device)
       attrs = translator.from_flex(params.to_unsafe_h)
-      if device.update(attrs)
+      if update_with_lock(device, attrs)
         render json: { instance: translator.to_flex(device) }
       else
         render json: { errors: device.errors.full_messages }, status: :unprocessable_entity

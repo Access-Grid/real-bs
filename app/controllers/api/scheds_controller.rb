@@ -26,7 +26,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless schedule
 
       attrs = SchedTranslator.from_flex(params.to_unsafe_h)
-      if schedule.update(attrs)
+      if update_with_lock(schedule, attrs)
         if params.to_unsafe_h.key?("elements")
           SchedTranslator.save_elements(schedule, params.to_unsafe_h["elements"])
         end

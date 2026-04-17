@@ -10,7 +10,7 @@ class DoorAccessPrivTranslator
     {
       unid: ars.id,
       uuid: ars.uuid,
-      version: ars.version_counter || 0,
+      version: ars.lock_version,
       tag: ars.tag,
       externalId: ars.external_id,
       name: ars.name,
@@ -22,7 +22,7 @@ class DoorAccessPrivTranslator
 
   def self.from_flex(json)
     attrs = {}
-    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:lock_version] = json["version"] if json.key?("version")
     attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:name] = json["name"] if json.key?("name")
     attrs[:external_id] = json["externalId"] if json.key?("externalId")

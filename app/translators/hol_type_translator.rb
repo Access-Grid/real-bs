@@ -10,7 +10,7 @@ class HolTypeTranslator
     {
       unid: ht.id,
       uuid: ht.uuid,
-      version: ht.version_counter || 0,
+      version: ht.lock_version,
       tag: ht.tag,
       externalId: ht.external_id,
       name: ht.name
@@ -19,7 +19,7 @@ class HolTypeTranslator
 
   def self.from_flex(json)
     attrs = {}
-    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:lock_version] = json["version"] if json.key?("version")
     attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:name] = json["name"] if json.key?("name")
     attrs[:external_id] = json["externalId"] if json.key?("externalId")

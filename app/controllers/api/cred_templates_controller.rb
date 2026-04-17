@@ -25,7 +25,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless ct
 
       attrs = CredTemplateTranslator.from_flex(params.to_unsafe_h)
-      if ct.update(attrs)
+      if update_with_lock(ct, attrs)
         render json: { instance: CredTemplateTranslator.to_flex(ct) }
       else
         render json: { errors: ct.errors.full_messages }, status: :unprocessable_entity

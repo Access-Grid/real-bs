@@ -25,7 +25,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless ht
 
       attrs = HolTypeTranslator.from_flex(params.to_unsafe_h)
-      if ht.update(attrs)
+      if update_with_lock(ht, attrs)
         render json: { instance: HolTypeTranslator.to_flex(ht) }
       else
         render json: { errors: ht.errors.full_messages }, status: :unprocessable_entity

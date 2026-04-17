@@ -26,7 +26,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless cred
 
       attrs = CredTranslator.from_flex(params.to_unsafe_h)
-      if cred.update(attrs)
+      if update_with_lock(cred, attrs)
         if params.to_unsafe_h.key?("privBindings")
           CredTranslator.save_priv_bindings(cred, params.to_unsafe_h["privBindings"])
         end

@@ -121,10 +121,6 @@ Full-stack E2E tests exercise the complete access control pipeline:
 ### Consider Adding to Community Swagger
 - [ ] `Cred.credHolder` -- ObjRef to Person; useful but not currently in community swagger
 - [ ] `POST /credHolder/import` -- CSV file upload for bulk credential holder import
-
-### Implementation Gaps (none)
-
-### Upstream Schema Gaps (blocked on community spec)
 - [ ] `DoorConfig` -- schema referenced in swagger but definition is missing. Door translator stubs `doorConfig: {}`. Implement when upstream adds the schema.
 
 ### Cross-Cutting
@@ -132,6 +128,6 @@ Full-stack E2E tests exercise the complete access control pipeline:
 - [x] `tag` field -- stored and served across all entities
 - [x] `commFamily` on Dev -- stored and served
 - [x] DevConfig `unid` and `version` -- served on all config subtypes
-- [ ] `version` optimistic locking -- increment on update, reject stale writes
+- [x] `version` optimistic locking -- Rails `lock_version` column, auto-increments on update, 409 Conflict on stale writes
 - [x] ObjRef `type` field aligned to Flex names via `FlexTypeNames` module (IoController->Controller, Schedule->Sched, CredentialType->CredTemplate, HolidayType->HolType, HolidayCalendar->HolCal, CredentialFormat->DataFormat, AccessRuleSet->DoorAccessPriv)
 - [ ] Consider aligning remaining Ruby class names with Flex names (e.g., CredentialFormat->DataFormat as model name)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_17_000000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -19,14 +19,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
 
   create_table "access_rule_sets", force: :cascade do |t|
     t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
     t.integer "priv_type", default: 0
     t.boolean "enabled", default: true
     t.string "external_id"
-    t.integer "version_counter", default: 0
-    t.string "tag"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["uuid"], name: "index_access_rule_sets_on_uuid", unique: true
   end
 
@@ -87,7 +87,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
     t.integer "position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["credential_format_parity_bit_id"], name: "idx_on_credential_format_parity_bit_id_aed47f38e7"
+    t.index ["credential_format_parity_bit_id"], name: "idx_on_credential_format_parity_bit_id_dc279530a1"
   end
 
   create_table "credential_format_parity_bits", force: :cascade do |t|
@@ -99,46 +99,46 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
 
   create_table "credential_formats", force: :cascade do |t|
     t.string "name"
-    t.integer "length"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
+    t.integer "length"
     t.integer "data_format_type", default: 1
     t.integer "min_bits"
     t.integer "max_bits"
     t.boolean "support_reverse_read", default: false
     t.json "elements"
-    t.integer "version_counter", default: 0
-    t.string "tag"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["uuid"], name: "index_credential_formats_on_uuid", unique: true
   end
 
   create_table "credential_types", force: :cascade do |t|
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.string "name"
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
     t.integer "priority"
     t.json "card_pin_template"
-    t.integer "version_counter", default: 0
-    t.string "tag"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["uuid"], name: "index_credential_types_on_uuid", unique: true
   end
 
   create_table "credentials", force: :cascade do |t|
-    t.integer "person_id"
-    t.integer "credential_type_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.string "name"
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
+    t.integer "person_id"
+    t.integer "credential_type_id"
     t.boolean "enabled", default: true
     t.datetime "effective"
     t.datetime "expires"
     t.json "card_pin"
     t.json "door_access_modifiers"
-    t.integer "version_counter", default: 0
-    t.string "tag"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["credential_type_id"], name: "index_credentials_on_credential_type_id"
     t.index ["person_id"], name: "index_credentials_on_person_id"
     t.index ["uuid"], name: "index_credentials_on_uuid", unique: true
@@ -147,14 +147,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
   create_table "data_layouts", force: :cascade do |t|
     t.string "name"
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
     t.integer "layout_type", default: 0
     t.integer "priority"
     t.boolean "enabled", default: true
     t.integer "data_format_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "version_counter", default: 0
-    t.string "tag"
     t.index ["uuid"], name: "index_data_layouts_on_uuid", unique: true
   end
 
@@ -162,7 +162,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
     t.string "type", null: false
     t.string "name"
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
     t.boolean "enabled", default: true
+    t.integer "comm_family"
     t.integer "sector_id"
     t.integer "physical_parent_id"
     t.integer "logical_parent_id"
@@ -174,8 +177,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
     t.datetime "last_state_update"
     t.json "metadata"
     t.json "public_metadata"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.string "external_id"
     t.string "address"
     t.integer "logical_address"
@@ -190,9 +191,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
     t.boolean "ignore_daylight_savings", default: false
     t.json "dev_mod_config"
     t.json "dev_config"
-    t.integer "version_counter", default: 0
-    t.string "tag"
-    t.integer "comm_family"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["logical_parent_id"], name: "index_devices_on_logical_parent_id"
     t.index ["physical_parent_id"], name: "index_devices_on_physical_parent_id"
     t.index ["sector_id"], name: "index_devices_on_sector_id"
@@ -204,29 +204,30 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
     t.integer "access_rule_set_id", null: false
     t.integer "door_id", null: false
     t.boolean "sched_restriction_invert", default: false
+    t.integer "schedule_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "schedule_id"
     t.index ["access_rule_set_id"], name: "index_door_access_priv_elements_on_access_rule_set_id"
-    t.index ["door_id"], name: "index_door_access_priv_elements_on_door_id"
     t.index ["schedule_id"], name: "index_door_access_priv_elements_on_schedule_id"
   end
 
   create_table "encryption_keys", force: :cascade do |t|
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
     t.string "algorithm"
     t.integer "size"
     t.string "key_identifier"
     t.text "bytes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "version_counter", default: 0
-    t.string "tag"
     t.index ["uuid"], name: "index_encryption_keys_on_uuid", unique: true
   end
 
   create_table "events", force: :cascade do |t|
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
     t.datetime "hw_time"
     t.datetime "db_time"
     t.string "hw_time_zone"
@@ -246,8 +247,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
     t.json "evt_sched_ref"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "version_counter", default: 0
-    t.string "tag"
     t.index ["evt_code"], name: "index_events_on_evt_code"
     t.index ["hw_time"], name: "index_events_on_hw_time"
     t.index ["uuid"], name: "index_events_on_uuid", unique: true
@@ -262,10 +261,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
   create_table "holiday_calendars", force: :cascade do |t|
     t.string "name", null: false
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "version_counter", default: 0
-    t.string "tag"
     t.index ["uuid"], name: "index_holiday_calendars_on_uuid", unique: true
   end
 
@@ -280,17 +279,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
   create_table "holiday_types", force: :cascade do |t|
     t.string "name", null: false
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
     t.string "external_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "version_counter", default: 0
-    t.string "tag"
     t.index ["uuid"], name: "index_holiday_types_on_uuid", unique: true
   end
 
   create_table "holidays", force: :cascade do |t|
     t.string "name", null: false
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
     t.integer "holiday_calendar_id"
     t.date "date"
     t.integer "num_days", default: 1
@@ -300,8 +301,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
     t.boolean "all_hol_types", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "version_counter", default: 0
-    t.string "tag"
     t.index ["holiday_calendar_id"], name: "index_holidays_on_holiday_calendar_id"
     t.index ["uuid"], name: "index_holidays_on_uuid", unique: true
   end
@@ -348,11 +347,11 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
   create_table "schedules", force: :cascade do |t|
     t.string "name", null: false
     t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
     t.string "external_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "version_counter", default: 0
-    t.string "tag"
     t.index ["uuid"], name: "index_schedules_on_uuid", unique: true
   end
 

@@ -12,7 +12,7 @@ class SchedTranslator
     {
       unid: schedule.id,
       uuid: schedule.uuid,
-      version: schedule.version_counter || 0,
+      version: schedule.lock_version,
       tag: schedule.tag,
       externalId: schedule.external_id,
       name: schedule.name,
@@ -22,7 +22,7 @@ class SchedTranslator
 
   def self.from_flex(json)
     attrs = {}
-    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:lock_version] = json["version"] if json.key?("version")
     attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:name] = json["name"] if json.key?("name")
     attrs[:external_id] = json["externalId"] if json.key?("externalId")

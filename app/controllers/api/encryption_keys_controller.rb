@@ -25,7 +25,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless ek
 
       attrs = EncryptionKeyTranslator.from_flex(params.to_unsafe_h)
-      if ek.update(attrs)
+      if update_with_lock(ek, attrs)
         render json: { instance: EncryptionKeyTranslator.to_flex(ek) }
       else
         render json: { errors: ek.errors.full_messages }, status: :unprocessable_entity

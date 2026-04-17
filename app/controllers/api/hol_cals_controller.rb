@@ -25,7 +25,7 @@ module Api
       return render json: { error: "Not found" }, status: :not_found unless hc
 
       attrs = HolCalTranslator.from_flex(params.to_unsafe_h)
-      if hc.update(attrs)
+      if update_with_lock(hc, attrs)
         render json: { instance: HolCalTranslator.to_flex(hc) }
       else
         render json: { errors: hc.errors.full_messages }, status: :unprocessable_entity

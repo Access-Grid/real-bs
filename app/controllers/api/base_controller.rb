@@ -2,6 +2,10 @@ module Api
   class BaseController < ActionController::API
     before_action :authenticate!
 
+    rescue_from ActiveRecord::StaleObjectError do
+      render json: { error: "Conflict: record was modified by another request (stale version)" }, status: :conflict
+    end
+
     private
 
     def authenticate!
@@ -30,6 +34,13 @@ module Api
       else
         model_class.find_by(uuid: id)
       end
+    end
+
+    def update_with_lock(record, attrs)
+      if attrs.key?(:lock_version)
+        record.lock_version = attrs.delete(:lock_version)
+      end
+      record.update(attrs)
     end
 
     def paginate(scope)
