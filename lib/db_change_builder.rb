@@ -20,6 +20,7 @@ class DbChangeBuilder
     db_change.privDeleteAll = true
     db_change.holCalDeleteAll = true
     db_change.holTypeDeleteAll = true
+    db_change.holDeleteAll = true
     db_change.schedDeleteAll = true
 
     # Devices
@@ -48,6 +49,9 @@ class DbChangeBuilder
 
     # Holiday calendars
     HolidayCalendar.find_each { |hc| db_change.holCal << build_hol_cal(hc) }
+
+    # Holidays
+    Holiday.includes(:holiday_types).find_each { |h| db_change.hol << build_hol(h) }
 
     db_change
   end
@@ -322,8 +326,31 @@ class DbChangeBuilder
     proto
   end
 
+  # -- Hol --
+  def self.build_hol(hol)
+    proto = P::Hol.new(name: hol.name, unid: hol.id)
+    proto.uuid = hol.uuid if hol.uuid.present?
+    proto.holCalUnid = hol.holiday_calendar_id if hol.holiday_calendar_id
+    proto.allHolTypes = hol.all_hol_types || false
+    proto.numDays = hol.num_days || 1
+    proto.repeat = hol.repeat || false
+    proto.numYearsRepeat = hol.num_years_repeat if hol.num_years_repeat && hol.num_years_repeat > 0
+    proto.preserveSchedDay = hol.preserve_sched_day || false
+
+    if hol.date
+      proto.date = P::SqlDateData.new(
+        year: hol.date.year,
+        month: hol.date.month,
+        day: hol.date.day
+      )
+    end
+
+    hol.holiday_types.each { |ht| proto.holTypesUnid << ht.id }
+
+    proto
+  end
+
   # -- HolCal --
-  # TODO: Individual Hol entries ARE in the proto DbChange (fields 155-157) but not yet serialized here.
   def self.build_hol_cal(hc)
     proto = P::HolCal.new(name: hc.name, unid: hc.id)
     proto.uuid = hc.uuid if hc.uuid.present?

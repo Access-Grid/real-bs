@@ -418,6 +418,58 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     assert_not_empty proto.uuid
   end
 
+  # -- build_hol --
+
+  test "build_hol basic" do
+    hc = HolidayCalendar.create!(name: "US")
+    ht = HolidayType.create!(name: "Federal")
+    hol = Holiday.create!(
+      name: "Independence Day",
+      holiday_calendar: hc,
+      date: Date.new(2026, 7, 4),
+      num_days: 1,
+      repeat: true,
+      num_years_repeat: 0,
+      preserve_sched_day: false,
+      all_hol_types: false
+    )
+    hol.holiday_holiday_types.create!(holiday_type: ht)
+
+    proto = DbChangeBuilder.build_hol(hol)
+
+    assert_equal "Independence Day", proto.name
+    assert_equal hol.id, proto.unid
+    assert_not_empty proto.uuid
+    assert_equal hc.id, proto.holCalUnid
+    assert_equal false, proto.allHolTypes
+    assert_equal 1, proto.numDays
+    assert_equal true, proto.repeat
+    assert_equal false, proto.preserveSchedDay
+
+    assert_not_nil proto.date
+    assert_equal 2026, proto.date.year
+    assert_equal 7, proto.date.month
+    assert_equal 4, proto.date.day
+
+    assert_equal 1, proto.holTypesUnid.size
+    assert_equal ht.id, proto.holTypesUnid.first
+  end
+
+  test "build_hol with allHolTypes and no explicit types" do
+    hol = Holiday.create!(name: "All Types Day", date: Date.new(2026, 12, 25), all_hol_types: true)
+    proto = DbChangeBuilder.build_hol(hol)
+
+    assert_equal true, proto.allHolTypes
+    assert_equal 0, proto.holTypesUnid.size
+  end
+
+  test "build_hol without date" do
+    hol = Holiday.create!(name: "No Date")
+    proto = DbChangeBuilder.build_hol(hol)
+
+    assert_nil proto.date
+  end
+
   # -- build_hol_cal --
 
   test "build_hol_cal" do
@@ -442,7 +494,8 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     AccessRuleSet.create!(name: "All Doors")
     Schedule.create!(name: "24/7")
     HolidayType.create!(name: "Federal")
-    HolidayCalendar.create!(name: "US")
+    hc = HolidayCalendar.create!(name: "US")
+    Holiday.create!(name: "July 4th", holiday_calendar: hc, date: Date.new(2026, 7, 4))
 
     db_change = DbChangeBuilder.build_full_sync
 
@@ -455,6 +508,7 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     assert db_change.privDeleteAll
     assert db_change.holCalDeleteAll
     assert db_change.holTypeDeleteAll
+    assert db_change.holDeleteAll
     assert db_change.schedDeleteAll
 
     # Entity counts (at least 1 of each)
@@ -467,6 +521,7 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     assert db_change.sched.size >= 1
     assert db_change.holType.size >= 1
     assert db_change.holCal.size >= 1
+    assert db_change.hol.size >= 1
   end
 
   test "build_full_sync encodes to valid protobuf" do
