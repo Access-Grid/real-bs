@@ -124,6 +124,13 @@ Full-stack E2E tests exercise the complete access control pipeline:
 - [ ] `Cred.credHolder` -- ObjRef to Person; useful but not currently in community swagger
 - [ ] Consider aligning remaining Ruby class names with Flex names (e.g., CredentialFormat->DataFormat as model name)
 
+### Improvements
+- [x] **E2E test verification** -- DoorConfig is now properly serialized in DbChangeBuilder; E2E pipeline confirmed working end-to-end
+- [ ] **DevStateRecord enrichment** -- Currently returns empty `devAspectStates`. Could populate COMM state (ONLINE/OFFLINE) based on SpCoreServer connection status, persist aspect states from Aporta events
+- [ ] **Query filters** -- Swagger shows query parameters like `devModRestriction.devMods` on devStateRecord/list and general filtering/ordering on other list endpoints; currently list endpoints don't support these filters
+- [ ] **Consolidate migrations** -- Roll the `external_dev_mod` columns into the single consolidated migration to keep it clean
+
+
 ### Cross-Cutting
 - [x] `version` field -- stored and served across all entities and DevConfig subtypes
 - [x] `tag` field -- stored and served across all entities
