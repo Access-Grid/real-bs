@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_17_030000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -25,6 +25,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.integer "priv_type", default: 0
     t.boolean "enabled", default: true
     t.string "external_id"
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["uuid"], name: "index_access_rule_sets_on_uuid", unique: true
   end
 
@@ -106,6 +108,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.integer "max_bits"
     t.boolean "support_reverse_read", default: false
     t.json "elements"
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["uuid"], name: "index_credential_formats_on_uuid", unique: true
   end
 
@@ -116,6 +120,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.string "uuid"
     t.integer "priority"
     t.json "card_pin_template"
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["uuid"], name: "index_credential_types_on_uuid", unique: true
   end
 
@@ -131,6 +137,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.datetime "expires"
     t.json "card_pin"
     t.json "door_access_modifiers"
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["credential_type_id"], name: "index_credentials_on_credential_type_id"
     t.index ["person_id"], name: "index_credentials_on_person_id"
     t.index ["uuid"], name: "index_credentials_on_uuid", unique: true
@@ -145,6 +153,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.integer "data_format_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["uuid"], name: "index_data_layouts_on_uuid", unique: true
   end
 
@@ -180,6 +190,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.boolean "ignore_daylight_savings", default: false
     t.json "dev_mod_config"
     t.json "dev_config"
+    t.integer "version_counter", default: 0
+    t.string "tag"
+    t.integer "comm_family"
     t.index ["logical_parent_id"], name: "index_devices_on_logical_parent_id"
     t.index ["physical_parent_id"], name: "index_devices_on_physical_parent_id"
     t.index ["sector_id"], name: "index_devices_on_sector_id"
@@ -207,6 +220,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.text "bytes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["uuid"], name: "index_encryption_keys_on_uuid", unique: true
   end
 
@@ -231,6 +246,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.json "evt_sched_ref"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["evt_code"], name: "index_events_on_evt_code"
     t.index ["hw_time"], name: "index_events_on_hw_time"
     t.index ["uuid"], name: "index_events_on_uuid", unique: true
@@ -247,6 +264,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.string "uuid"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["uuid"], name: "index_holiday_calendars_on_uuid", unique: true
   end
 
@@ -264,6 +283,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.string "external_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["uuid"], name: "index_holiday_types_on_uuid", unique: true
   end
 
@@ -279,6 +300,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.boolean "all_hol_types", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["holiday_calendar_id"], name: "index_holidays_on_holiday_calendar_id"
     t.index ["uuid"], name: "index_holidays_on_uuid", unique: true
   end
@@ -328,6 +351,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_020000) do
     t.string "external_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "version_counter", default: 0
+    t.string "tag"
     t.index ["uuid"], name: "index_schedules_on_uuid", unique: true
   end
 

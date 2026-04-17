@@ -19,9 +19,10 @@ class NodeDevTranslatorTest < ActiveSupport::TestCase
     assert_equal "Server Node", result[:name]
   end
 
-  test "to_flex includes empty nodeDevConfig when no dev_config" do
+  test "to_flex includes nodeDevConfig with unid and version when no dev_config" do
     result = NodeDevTranslator.to_flex(@node_dev)
-    assert_equal({}, result[:nodeDevConfig])
+    assert_equal @node_dev.id, result[:nodeDevConfig][:unid]
+    assert_equal 0, result[:nodeDevConfig][:version]
   end
 
   test "from_flex extracts name" do

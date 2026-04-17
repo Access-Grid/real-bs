@@ -65,9 +65,10 @@ class CredReaderTranslatorTest < ActiveSupport::TestCase
     assert_equal "rp", result[:credReaderConfig][:password]
   end
 
-  test "to_flex returns empty credReaderConfig when no dev_config" do
+  test "to_flex returns credReaderConfig with unid and version when no dev_config" do
     result = CredReaderTranslator.to_flex(@reader)
-    assert_equal({}, result[:credReaderConfig])
+    assert_equal @reader.id, result[:credReaderConfig][:unid]
+    assert_equal 0, result[:credReaderConfig][:version]
   end
 
   test "from_flex extracts credReaderConfig into dev_config" do

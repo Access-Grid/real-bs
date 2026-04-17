@@ -50,9 +50,10 @@ class SensorTranslatorTest < ActiveSupport::TestCase
     assert_equal "sensor_user", result[:sensorConfig][:username]
   end
 
-  test "to_flex returns empty sensorConfig when no dev_config" do
+  test "to_flex returns sensorConfig with unid and version when no dev_config" do
     result = SensorTranslator.to_flex(@sensor)
-    assert_equal({}, result[:sensorConfig])
+    assert_equal @sensor.id, result[:sensorConfig][:unid]
+    assert_equal 0, result[:sensorConfig][:version]
   end
 
   test "from_flex extracts sensorConfig into dev_config" do

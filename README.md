@@ -128,6 +128,10 @@ Full-stack E2E tests exercise the complete access control pipeline:
 - [ ] `DoorConfig` -- schema referenced in swagger but definition is missing. Door translator stubs `doorConfig: {}`. Implement when upstream adds the schema.
 
 ### Cross-Cutting
-- [ ] `version` field -- optimistic locking, stubbed across all entities
-- [ ] `tag` field -- stubbed across all entities
+- [x] `version` field -- stored and served across all entities and DevConfig subtypes
+- [x] `tag` field -- stored and served across all entities
+- [x] `commFamily` on Dev -- stored and served
+- [x] DevConfig `unid` and `version` -- served on all config subtypes
+- [ ] `version` optimistic locking -- increment on update, reject stale writes
 - [x] ObjRef `type` field aligned to Flex names via `FlexTypeNames` module (IoController->Controller, Schedule->Sched, CredentialType->CredTemplate, HolidayType->HolType, HolidayCalendar->HolCal, CredentialFormat->DataFormat, AccessRuleSet->DoorAccessPriv)
+- [ ] Consider aligning remaining Ruby class names with Flex names (e.g., CredentialFormat->DataFormat as model name)

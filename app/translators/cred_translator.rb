@@ -15,6 +15,8 @@ class CredTranslator
     result = {
       unid: cred.id,
       uuid: cred.uuid,
+      version: cred.version_counter || 0,
+      tag: cred.tag,
       name: cred.name,
       enabled: cred.enabled,
       effective: cred.effective&.iso8601,
@@ -30,6 +32,8 @@ class CredTranslator
 
   def self.from_flex(json)
     attrs = {}
+    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:name] = json["name"] if json.key?("name")
     attrs[:enabled] = json["enabled"] if json.key?("enabled")
     attrs[:effective] = json["effective"] if json.key?("effective")

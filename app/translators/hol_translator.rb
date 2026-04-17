@@ -3,6 +3,8 @@ class HolTranslator
     {
       unid: hol.id,
       uuid: hol.uuid,
+      version: hol.version_counter || 0,
+      tag: hol.tag,
       name: hol.name,
       holCal: HolCalTranslator.obj_ref(hol.holiday_calendar),
       holTypes: hol.holiday_types.map { |ht| HolTypeTranslator.obj_ref(ht) },
@@ -17,6 +19,8 @@ class HolTranslator
 
   def self.from_flex(json)
     attrs = {}
+    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:name] = json["name"] if json.key?("name")
     attrs[:date] = json["date"] if json.key?("date")
     attrs[:num_days] = json["numDays"] if json.key?("numDays")

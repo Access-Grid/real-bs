@@ -3,6 +3,8 @@ class EvtTranslator
     {
       unid: evt.id,
       uuid: evt.uuid,
+      version: evt.version_counter || 0,
+      tag: evt.tag,
       hwTime: evt.hw_time&.iso8601,
       dbTime: evt.db_time&.iso8601,
       hwTimeZone: evt.hw_time_zone,
@@ -25,6 +27,8 @@ class EvtTranslator
 
   def self.from_flex(json)
     attrs = {}
+    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:hw_time] = json["hwTime"] if json.key?("hwTime")
     attrs[:db_time] = json["dbTime"] if json.key?("dbTime")
     attrs[:hw_time_zone] = json["hwTimeZone"] if json.key?("hwTimeZone")

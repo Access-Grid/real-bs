@@ -21,9 +21,10 @@ class ActuatorTranslatorTest < ActiveSupport::TestCase
     assert_equal "Door Strike", result[:name]
   end
 
-  test "to_flex includes empty actuatorConfig when no dev_config" do
+  test "to_flex includes actuatorConfig with unid and version when no dev_config" do
     result = ActuatorTranslator.to_flex(@actuator)
-    assert_equal({}, result[:actuatorConfig])
+    assert_equal @actuator.id, result[:actuatorConfig][:unid]
+    assert_equal 0, result[:actuatorConfig][:version]
   end
 
   test "to_flex includes logicalParent" do

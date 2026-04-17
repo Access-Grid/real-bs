@@ -142,9 +142,10 @@ class ControllerTranslatorTest < ActiveSupport::TestCase
     assert_equal "secret", result[:controllerConfig][:password]
   end
 
-  test "to_flex returns empty controllerConfig when no dev_config" do
+  test "to_flex returns controllerConfig with unid and version when no dev_config" do
     result = ControllerTranslator.to_flex(@io_controller)
-    assert_equal({}, result[:controllerConfig])
+    assert_equal @io_controller.id, result[:controllerConfig][:unid]
+    assert_equal 0, result[:controllerConfig][:version]
   end
 
   test "from_flex extracts controllerConfig into dev_config" do

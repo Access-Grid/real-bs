@@ -44,9 +44,12 @@ class DevTranslatorBase
       devType: device.dev_type,
       unid: device.id,
       uuid: device.uuid,
+      version: device.version_counter || 0,
+      tag: device.tag,
       name: device.name,
       externalId: device.external_id,
       enabled: device.enabled,
+      commFamily: device.comm_family,
       address: device.address,
       logicalAddress: device.logical_address,
       macAddress: device.mac_address,
@@ -81,6 +84,9 @@ class DevTranslatorBase
     attrs[:dev_use] = json["devUse"] if json.key?("devUse")
     attrs[:time_zone] = json["timeZone"] if json.key?("timeZone")
     attrs[:ignore_daylight_savings] = json["ignoreDaylightSavings"] if json.key?("ignoreDaylightSavings")
+    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:tag] = json["tag"] if json.key?("tag")
+    attrs[:comm_family] = json["commFamily"] if json.key?("commFamily")
     attrs[:dev_mod_config] = json["devModConfig"] if json.key?("devModConfig")
 
     # Legacy metadata extraction (brand/model/serialNumber nested under metadata)
@@ -118,6 +124,8 @@ class DevTranslatorBase
   def self.base_config_to_flex(device)
     cfg = device.dev_config || {}
     result = {}
+    result[:unid] = device.id
+    result[:version] = cfg["version"] || 0
     result[:username] = cfg["username"] if cfg["username"].present?
     result[:password] = cfg["password"] if cfg["password"].present?
     result[:devInitiatesConnection] = cfg["devInitiatesConnection"] unless cfg["devInitiatesConnection"].nil?
@@ -140,6 +148,7 @@ class DevTranslatorBase
     return {} unless cfg.is_a?(Hash)
 
     result = {}
+    result["version"] = cfg["version"] if cfg.key?("version")
     result["username"] = cfg["username"] if cfg.key?("username")
     result["password"] = cfg["password"] if cfg.key?("password")
     result["devInitiatesConnection"] = cfg["devInitiatesConnection"] if cfg.key?("devInitiatesConnection")

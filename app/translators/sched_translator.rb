@@ -12,6 +12,8 @@ class SchedTranslator
     {
       unid: schedule.id,
       uuid: schedule.uuid,
+      version: schedule.version_counter || 0,
+      tag: schedule.tag,
       externalId: schedule.external_id,
       name: schedule.name,
       elements: schedule.schedule_elements.map { |el| element_to_flex(el) }
@@ -20,6 +22,8 @@ class SchedTranslator
 
   def self.from_flex(json)
     attrs = {}
+    attrs[:version_counter] = json["version"] if json.key?("version")
+    attrs[:tag] = json["tag"] if json.key?("tag")
     attrs[:name] = json["name"] if json.key?("name")
     attrs[:external_id] = json["externalId"] if json.key?("externalId")
     attrs
