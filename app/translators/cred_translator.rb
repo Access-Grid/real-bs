@@ -22,7 +22,7 @@ class CredTranslator
       cardPin: cred.card_pin || {},
       credTemplate: obj_ref(cred.credential_type),
       credHolder: obj_ref(cred.person),
-      privBindings: []
+      privBindings: cred.cred_priv_bindings.map { |b| binding_to_flex(b) }
     }
     result
   end
@@ -54,4 +54,66 @@ class CredTranslator
 
     attrs
   end
+
+  def self.save_priv_bindings(cred, bindings_json)
+    return unless bindings_json.is_a?(Array)
+
+    cred.cred_priv_bindings.destroy_all
+    bindings_json.each do |b|
+      cred.cred_priv_bindings.create!(
+        access_rule_set_id: resolve_priv_id(b["priv"]),
+        dev_as_door_access_priv_unid: resolve_dev_unid(b["devAsDoorAccessPriv"]),
+        sched_restriction_invert: b.dig("schedRestriction", "invert") || false,
+        schedule_id: resolve_schedule_id(b.dig("schedRestriction", "sched"))
+      )
+    end
+  end
+
+  def self.binding_to_flex(binding)
+    result = { unid: binding.id }
+    result[:priv] = DoorAccessPrivTranslator.obj_ref(binding.access_rule_set)
+    result[:devAsDoorAccessPriv] = dev_as_door_obj_ref(binding.dev_as_door_access_priv_unid)
+    result[:schedRestriction] = {
+      sched: SchedTranslator.obj_ref(binding.schedule),
+      invert: binding.sched_restriction_invert || false
+    }
+    result
+  end
+
+  def self.resolve_priv_id(priv_ref)
+    return nil unless priv_ref.is_a?(Hash)
+
+    if priv_ref["unid"]
+      priv_ref["unid"]
+    elsif priv_ref["uuid"]
+      AccessRuleSet.find_by(uuid: priv_ref["uuid"])&.id
+    end
+  end
+
+  def self.resolve_dev_unid(dev_ref)
+    return nil unless dev_ref.is_a?(Hash)
+    dev_ref["unid"]
+  end
+
+  def self.resolve_schedule_id(sched_ref)
+    return nil unless sched_ref.is_a?(Hash)
+
+    if sched_ref["unid"]
+      sched_ref["unid"]
+    elsif sched_ref["uuid"]
+      Schedule.find_by(uuid: sched_ref["uuid"])&.id
+    end
+  end
+
+  def self.dev_as_door_obj_ref(dev_unid)
+    return nil unless dev_unid
+    dev = Device.find_by(id: dev_unid)
+    return nil unless dev
+    ref = { unid: dev.id, name: dev.name, type: dev.class.name }
+    ref[:uuid] = dev.uuid if dev.uuid
+    ref
+  end
+
+  private_class_method :binding_to_flex, :resolve_priv_id, :resolve_dev_unid,
+                       :resolve_schedule_id, :dev_as_door_obj_ref
 end

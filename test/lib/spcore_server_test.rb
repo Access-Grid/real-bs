@@ -5,7 +5,7 @@ class SpCoreServerTest < ActiveSupport::TestCase
   P = Z9::Spcore::Proto
 
   setup do
-    @server = SpCoreServer.new(port: 0) # port 0 = OS picks free port
+    @server = SpCoreServer.new(port: 0, auto_sync: false) # port 0 = OS picks free port
   end
 
   teardown do
@@ -35,7 +35,7 @@ class SpCoreServerTest < ActiveSupport::TestCase
 
   test "write and read message round trip" do
     port = find_free_port
-    @server = SpCoreServer.new(port: port)
+    @server = SpCoreServer.new(port: port, auto_sync: false)
     @server.start
 
     # Connect as a fake Aporta client
@@ -65,7 +65,7 @@ class SpCoreServerTest < ActiveSupport::TestCase
 
   test "PING echo" do
     port = find_free_port
-    @server = SpCoreServer.new(port: port)
+    @server = SpCoreServer.new(port: port, auto_sync: false)
     @server.start
 
     client = TCPSocket.new("127.0.0.1", port)
@@ -83,7 +83,7 @@ class SpCoreServerTest < ActiveSupport::TestCase
 
   test "send_db_change and receive DbChangeResp" do
     port = find_free_port
-    @server = SpCoreServer.new(port: port)
+    @server = SpCoreServer.new(port: port, auto_sync: false)
     @server.start
 
     client = TCPSocket.new("127.0.0.1", port)
@@ -123,7 +123,7 @@ class SpCoreServerTest < ActiveSupport::TestCase
 
   test "send_dev_action" do
     port = find_free_port
-    @server = SpCoreServer.new(port: port)
+    @server = SpCoreServer.new(port: port, auto_sync: false)
     @server.start
 
     client = TCPSocket.new("127.0.0.1", port)
@@ -150,7 +150,7 @@ class SpCoreServerTest < ActiveSupport::TestCase
 
   test "receives EVT messages" do
     port = find_free_port
-    @server = SpCoreServer.new(port: port)
+    @server = SpCoreServer.new(port: port, auto_sync: false)
     @server.start
 
     client = TCPSocket.new("127.0.0.1", port)

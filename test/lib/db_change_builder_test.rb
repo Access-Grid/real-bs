@@ -128,6 +128,45 @@ class DbChangeBuilderTest < ActiveSupport::TestCase
     assert_nil proto.cardPin
   end
 
+  test "build_cred includes privBindings" do
+    cred = Credential.create!(name: "Badge")
+    ars = AccessRuleSet.create!(name: "All Doors")
+    sched = Schedule.create!(name: "Business Hours")
+    door = Door.create!(name: "Front Door")
+
+    # Binding with priv + schedRestriction
+    cred.cred_priv_bindings.create!(
+      access_rule_set: ars,
+      schedule: sched,
+      sched_restriction_invert: true
+    )
+    # Binding with devAsDoorAccessPriv
+    cred.cred_priv_bindings.create!(
+      dev_as_door_access_priv_unid: door.id
+    )
+
+    proto = DbChangeBuilder.build_cred(cred)
+
+    assert_equal 2, proto.privBindings.size
+
+    cpb1 = proto.privBindings[0]
+    assert_equal ars.id, cpb1.privUnid
+    assert_not_nil cpb1.schedRestriction
+    assert_equal sched.id, cpb1.schedRestriction.schedUnid
+    assert_equal true, cpb1.schedRestriction.invert
+
+    cpb2 = proto.privBindings[1]
+    assert_equal door.id, cpb2.devAsDoorAccessPrivUnid
+    assert_equal 0, cpb2.privUnid # not set
+  end
+
+  test "build_cred without privBindings has empty proto list" do
+    cred = Credential.create!(name: "Badge")
+    proto = DbChangeBuilder.build_cred(cred)
+
+    assert_equal 0, proto.privBindings.size
+  end
+
   # -- build_cred_template --
 
   test "build_cred_template basic" do

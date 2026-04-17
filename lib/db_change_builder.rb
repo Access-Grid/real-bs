@@ -111,6 +111,21 @@ class DbChangeBuilder
       proto.cardPin = card_pin
     end
 
+    # CredPrivBindings
+    cred.cred_priv_bindings.each do |binding|
+      cpb = P::CredPrivBinding.new
+      cpb.unid = binding.id
+      cpb.privUnid = binding.access_rule_set_id if binding.access_rule_set_id
+      cpb.devAsDoorAccessPrivUnid = binding.dev_as_door_access_priv_unid if binding.dev_as_door_access_priv_unid
+      if binding.schedule_id
+        cpb.schedRestriction = P::SchedRestriction.new(
+          schedUnid: binding.schedule_id,
+          invert: binding.sched_restriction_invert || false
+        )
+      end
+      proto.privBindings << cpb
+    end
+
     proto
   end
 

@@ -160,4 +160,86 @@ class Api::CredTest < ActionDispatch::IntegrationTest
       headers: { "sessionToken" => @token }
     assert_response :not_found
   end
+
+  # -- privBindings --
+
+  test "POST /cred/save with privBindings creates bindings" do
+    ars = AccessRuleSet.create!(name: "All Doors")
+    sched = Schedule.create!(name: "Business Hours")
+
+    post "/cred/save",
+      params: {
+        name: "Priv Badge",
+        privBindings: [
+          { priv: { unid: ars.id }, schedRestriction: { sched: { unid: sched.id }, invert: true } }
+        ]
+      },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+
+    pbs = json["instance"]["privBindings"]
+    assert_equal 1, pbs.length
+    assert_equal ars.id, pbs[0]["priv"]["unid"]
+    assert_equal sched.id, pbs[0]["schedRestriction"]["sched"]["unid"]
+    assert_equal true, pbs[0]["schedRestriction"]["invert"]
+  end
+
+  test "GET /cred/list returns privBindings with priv ObjRef" do
+    ars = AccessRuleSet.create!(name: "Lobby")
+    @cred.cred_priv_bindings.create!(access_rule_set: ars)
+
+    get "/cred/list", headers: { "sessionToken" => @token }
+    json = JSON.parse(response.body)
+    cred = json["instanceList"].find { |c| c["unid"] == @cred.id }
+
+    assert_equal 1, cred["privBindings"].length
+    assert_equal ars.id, cred["privBindings"][0]["priv"]["unid"]
+    assert_equal "Lobby", cred["privBindings"][0]["priv"]["name"]
+  end
+
+  test "POST /cred/update with privBindings replaces bindings" do
+    ars1 = AccessRuleSet.create!(name: "ARS 1")
+    ars2 = AccessRuleSet.create!(name: "ARS 2")
+    @cred.cred_priv_bindings.create!(access_rule_set: ars1)
+
+    post "/cred/update/#{@cred.id}",
+      params: {
+        privBindings: [{ priv: { unid: ars2.id } }]
+      },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+    json = JSON.parse(response.body)
+
+    pbs = json["instance"]["privBindings"]
+    assert_equal 1, pbs.length
+    assert_equal ars2.id, pbs[0]["priv"]["unid"]
+  end
+
+  test "POST /cred/update without privBindings preserves existing" do
+    ars = AccessRuleSet.create!(name: "ARS")
+    @cred.cred_priv_bindings.create!(access_rule_set: ars)
+
+    post "/cred/update/#{@cred.id}",
+      params: { name: "Renamed Badge" },
+      headers: { "sessionToken" => @token },
+      as: :json
+    assert_response :success
+
+    assert_equal 1, @cred.cred_priv_bindings.reload.count
+    assert_equal ars.id, @cred.cred_priv_bindings.first.access_rule_set_id
+  end
+
+  test "POST /cred/delete cascades to priv bindings" do
+    ars = AccessRuleSet.create!(name: "ARS")
+    @cred.cred_priv_bindings.create!(access_rule_set: ars)
+
+    assert_difference "CredPrivBinding.count", -1 do
+      post "/cred/delete/#{@cred.id}",
+        headers: { "sessionToken" => @token }
+    end
+    assert_response :success
+  end
 end

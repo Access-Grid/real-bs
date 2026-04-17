@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_04_16_260000) do
+ActiveRecord::Schema[8.0].define(version: 2026_04_16_270000) do
   create_table "access_paths", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -48,6 +48,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_260000) do
     t.string "postal_code"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "cred_priv_bindings", force: :cascade do |t|
+    t.integer "credential_id", null: false
+    t.integer "access_rule_set_id"
+    t.integer "dev_as_door_access_priv_unid"
+    t.boolean "sched_restriction_invert", default: false
+    t.integer "schedule_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["access_rule_set_id"], name: "index_cred_priv_bindings_on_access_rule_set_id"
+    t.index ["credential_id"], name: "index_cred_priv_bindings_on_credential_id"
+    t.index ["schedule_id"], name: "index_cred_priv_bindings_on_schedule_id"
   end
 
   create_table "credential_format_field_bits", force: :cascade do |t|
@@ -337,6 +350,9 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_16_260000) do
   end
 
   add_foreign_key "api_sessions", "users"
+  add_foreign_key "cred_priv_bindings", "access_rule_sets"
+  add_foreign_key "cred_priv_bindings", "credentials"
+  add_foreign_key "cred_priv_bindings", "schedules"
   add_foreign_key "credential_format_field_bits", "credential_format_fields"
   add_foreign_key "credential_format_parity_bit_ranges", "credential_format_parity_bits"
   add_foreign_key "credentials", "credential_types"

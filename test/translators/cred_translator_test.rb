@@ -35,6 +35,44 @@ class CredTranslatorTest < ActiveSupport::TestCase
     assert_equal person.id, flex[:credHolder][:unid]
   end
 
+  test "to_flex maps privBindings with priv ObjRef" do
+    cred = Credential.create!(name: "Badge")
+    ars = AccessRuleSet.create!(name: "All Doors")
+    sched = Schedule.create!(name: "Business Hours")
+    cred.cred_priv_bindings.create!(access_rule_set: ars, schedule: sched, sched_restriction_invert: true)
+
+    flex = CredTranslator.to_flex(cred)
+
+    assert_equal 1, flex[:privBindings].length
+    pb = flex[:privBindings][0]
+    assert_not_nil pb[:unid]
+    assert_equal ars.id, pb[:priv][:unid]
+    assert_equal "All Doors", pb[:priv][:name]
+    assert_equal sched.id, pb[:schedRestriction][:sched][:unid]
+    assert_equal "Business Hours", pb[:schedRestriction][:sched][:name]
+    assert_equal true, pb[:schedRestriction][:invert]
+    assert_nil pb[:devAsDoorAccessPriv]
+  end
+
+  test "to_flex maps privBindings with devAsDoorAccessPriv" do
+    cred = Credential.create!(name: "Badge")
+    door = Door.create!(name: "Front Door")
+    cred.cred_priv_bindings.create!(dev_as_door_access_priv_unid: door.id)
+
+    flex = CredTranslator.to_flex(cred)
+
+    pb = flex[:privBindings][0]
+    assert_nil pb[:priv]
+    assert_equal door.id, pb[:devAsDoorAccessPriv][:unid]
+    assert_equal "Front Door", pb[:devAsDoorAccessPriv][:name]
+  end
+
+  test "to_flex returns empty privBindings when none exist" do
+    cred = Credential.create!(name: "Badge")
+    flex = CredTranslator.to_flex(cred)
+    assert_equal [], flex[:privBindings]
+  end
+
   test "to_flex handles nil associations" do
     cred = Credential.create!(name: "Orphan Badge")
     flex = CredTranslator.to_flex(cred)
@@ -96,5 +134,80 @@ class CredTranslatorTest < ActiveSupport::TestCase
     json = { "name" => "Badge", "unknownField" => "ignored" }
     attrs = CredTranslator.from_flex(json)
     assert_equal({ name: "Badge" }, attrs)
+  end
+
+  # -- save_priv_bindings --
+
+  test "save_priv_bindings creates bindings with priv by unid" do
+    cred = Credential.create!(name: "Badge")
+    ars = AccessRuleSet.create!(name: "ARS")
+    sched = Schedule.create!(name: "Sched")
+
+    bindings = [
+      {
+        "priv" => { "unid" => ars.id },
+        "schedRestriction" => { "sched" => { "unid" => sched.id }, "invert" => true }
+      }
+    ]
+    CredTranslator.save_priv_bindings(cred, bindings)
+
+    assert_equal 1, cred.cred_priv_bindings.count
+    b = cred.cred_priv_bindings.first
+    assert_equal ars.id, b.access_rule_set_id
+    assert_equal sched.id, b.schedule_id
+    assert_equal true, b.sched_restriction_invert
+  end
+
+  test "save_priv_bindings resolves priv by uuid" do
+    cred = Credential.create!(name: "Badge")
+    ars = AccessRuleSet.create!(name: "ARS")
+
+    bindings = [{ "priv" => { "uuid" => ars.uuid } }]
+    CredTranslator.save_priv_bindings(cred, bindings)
+
+    assert_equal ars.id, cred.cred_priv_bindings.first.access_rule_set_id
+  end
+
+  test "save_priv_bindings resolves schedule by uuid" do
+    cred = Credential.create!(name: "Badge")
+    sched = Schedule.create!(name: "Sched")
+
+    bindings = [{ "schedRestriction" => { "sched" => { "uuid" => sched.uuid } } }]
+    CredTranslator.save_priv_bindings(cred, bindings)
+
+    assert_equal sched.id, cred.cred_priv_bindings.first.schedule_id
+  end
+
+  test "save_priv_bindings with devAsDoorAccessPriv" do
+    cred = Credential.create!(name: "Badge")
+    door = Door.create!(name: "Front Door")
+
+    bindings = [{ "devAsDoorAccessPriv" => { "unid" => door.id } }]
+    CredTranslator.save_priv_bindings(cred, bindings)
+
+    assert_equal door.id, cred.cred_priv_bindings.first.dev_as_door_access_priv_unid
+  end
+
+  test "save_priv_bindings replaces existing bindings" do
+    cred = Credential.create!(name: "Badge")
+    ars1 = AccessRuleSet.create!(name: "ARS 1")
+    ars2 = AccessRuleSet.create!(name: "ARS 2")
+    cred.cred_priv_bindings.create!(access_rule_set: ars1)
+
+    bindings = [{ "priv" => { "unid" => ars2.id } }]
+    CredTranslator.save_priv_bindings(cred, bindings)
+
+    assert_equal 1, cred.cred_priv_bindings.count
+    assert_equal ars2.id, cred.cred_priv_bindings.first.access_rule_set_id
+  end
+
+  test "save_priv_bindings does nothing when not an array" do
+    cred = Credential.create!(name: "Badge")
+    ars = AccessRuleSet.create!(name: "ARS")
+    cred.cred_priv_bindings.create!(access_rule_set: ars)
+
+    CredTranslator.save_priv_bindings(cred, nil)
+
+    assert_equal 1, cred.cred_priv_bindings.count
   end
 end

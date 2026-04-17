@@ -1,10 +1,28 @@
 require "net/http"
 require "json"
 require "open3"
+require "rack"
 
 # E2E integration test orchestrator.
 #
-# Three components:
+# Full pipeline -- no shortcuts:
+#   1. Create all entities via the Flex REST API (Rack-level calls)
+#   2. Start SpCoreServer (protobuf TCP)
+#   3. Start Aporta (.NET controller) -- connects to SpCoreServer
+#   4. SpCoreServer automatically: sends EvtControl, builds full sync via
+#      DbChangeBuilder, sends DbChange to Aporta
+#   5. PD sim simulates card swipes via OSDP
+#   6. Aporta makes access decisions, sends events back
+#   7. SpCoreServer persists events to Event table
+#   8. Tests verify events via GET /evt/list REST API
+#
+# Known cheat:
+#   CredReaderConfig (commType, serialPortAddress) is not yet in the REST API.
+#   A db_change_modifier callback patches the OSDP config on the proto before
+#   it reaches Aporta. When the CredReaderConfig API gap is closed, this patch
+#   goes away and the pipeline is 100% clean.
+#
+# Components:
 #   1. real-bs SpCoreServer (protobuf TCP, port 9723)
 #   2. Aporta (.NET controller, connects to SpCoreServer and OSDP PD sim)
 #   3. osdp-net-pd-sim (OSDP PD simulator, OSDP on 9843, HTTP on 5230)
@@ -60,6 +78,10 @@ class E2EOrchestrator
     @server = nil
     @aporta_pid = nil
     @pd_sim_pid = nil
+    @rack_app = Rails.application
+    @session_token = nil
+    # Track created entity IDs for reference
+    @ids = {}
   end
 
   def proto
@@ -71,11 +93,12 @@ class E2EOrchestrator
 
   def start_all
     puts "=== E2E: Starting components ==="
+    clean_database
+    create_config_via_api
     start_pd_sim
     start_spcore_server
     start_aporta
-    wait_for_aporta_connection
-    send_full_config
+    wait_for_ready
     puts "=== E2E: All components ready ==="
   end
 
@@ -95,33 +118,43 @@ class E2EOrchestrator
   end
 
   # -- Test: Access Granted --
-  # Swipe a known card -> expect ACCESS_GRANTED event
+  # Swipe a known card -> expect ACCESS_GRANTED event via /evt/list API
   def test_access_granted
     puts "\n--- Test: Access Granted ---"
     reset_pd_sim
+    event_count_before = Event.count
 
     # Swipe card 12345 (26-bit Wiegand, facility code 100)
-    # PD sim encodes proper 26-bit Wiegand with parity; Aporta decodes using DataFormat
     pd_sim_wiegand26_card_read(facility_code: 100, card_number: 12345)
 
-    # Wait for event from Aporta
-    evt = wait_for_access_event(timeout: 30)
-    assert_evt_code(evt, :EvtCode_DOOR_ACCESS_GRANTED, "Expected ACCESS_GRANTED")
-    puts "  PASS: Received DOOR_ACCESS_GRANTED event"
+    # Wait for event to be persisted to database
+    evt_record = wait_for_db_event(event_count_before, timeout: 30)
+    assert_evt_code_int(evt_record, 48, "Expected ACCESS_GRANTED (48)")
+
+    # Verify event is available via /evt/list REST API
+    api_events = api_get("/evt/list")
+    granted = api_events["instanceList"].find { |e| e["evtCode"] == 48 }
+    raise "ACCESS_GRANTED event not returned by /evt/list" unless granted
+    puts "  PASS: ACCESS_GRANTED event persisted and returned by /evt/list API"
   end
 
   # -- Test: Access Denied --
-  # Swipe an unknown card -> expect ACCESS_DENIED event
+  # Swipe an unknown card -> expect ACCESS_DENIED event via /evt/list API
   def test_access_denied
     puts "\n--- Test: Access Denied ---"
     reset_pd_sim
+    event_count_before = Event.count
 
     # Swipe unknown card 99999 (26-bit Wiegand, facility code 100)
     pd_sim_wiegand26_card_read(facility_code: 100, card_number: 99999)
 
-    evt = wait_for_access_event(timeout: 15)
-    assert_evt_code(evt, :EvtCode_DOOR_ACCESS_DENIED, "Expected ACCESS_DENIED")
-    puts "  PASS: Received DOOR_ACCESS_DENIED event"
+    evt_record = wait_for_db_event(event_count_before, timeout: 15)
+    assert_evt_code_int(evt_record, 49, "Expected ACCESS_DENIED (49)")
+
+    api_events = api_get("/evt/list")
+    denied = api_events["instanceList"].find { |e| e["evtCode"] == 49 }
+    raise "ACCESS_DENIED event not returned by /evt/list" unless denied
+    puts "  PASS: ACCESS_DENIED event persisted and returned by /evt/list API"
   end
 
   # -- Test: Momentary Unlock --
@@ -132,7 +165,7 @@ class E2EOrchestrator
 
     req = proto::DevActionReq.new(
       devActionType: :DevActionType_DOOR_MOMENTARY_UNLOCK,
-      devUnid: door_unid
+      devUnid: @ids[:door]
     )
     @server.send_dev_action(req)
 
@@ -149,6 +182,141 @@ class E2EOrchestrator
   end
 
   private
+
+  # ---- Database cleanup ----
+
+  def clean_database
+    print "  Cleaning database... "
+    [Event, CredPrivBinding, Credential, DoorAccessPrivElement, AccessRuleSet,
+     ScheduleElementHolidayType, ScheduleElement, Schedule,
+     DataLayout, CredentialFormat, CredentialType,
+     Device, Sector, Building, HolidayHolidayType, Holiday, HolidayCalendar, HolidayType,
+     ApiSession, User].each do |model|
+      model.delete_all
+    rescue => e
+      # Skip if table doesn't exist yet
+    end
+    puts "OK"
+  end
+
+  # ---- Create all config via REST API ----
+
+  def create_config_via_api
+    puts "  Creating config via REST API..."
+    authenticate
+
+    # IoController
+    resp = api_post("/controller/save", { name: "E2E Panel" })
+    @ids[:panel] = resp["instance"]["unid"]
+    puts "    IoController: unid=#{@ids[:panel]}"
+
+    # Door (logical parent = panel)
+    resp = api_post("/door/save", {
+      name: "E2E Door",
+      logicalParent: { unid: @ids[:panel] }
+    })
+    @ids[:door] = resp["instance"]["unid"]
+    puts "    Door: unid=#{@ids[:door]}"
+
+    # CredReader (physical parent = panel, logical parent = door)
+    resp = api_post("/credReader/save", {
+      name: "E2E Reader",
+      physicalParent: { unid: @ids[:panel] },
+      logicalParent: { unid: @ids[:door] },
+      port: 0,
+      speed: 9600
+    })
+    @ids[:reader] = resp["instance"]["unid"]
+    puts "    CredReader: unid=#{@ids[:reader]}"
+
+    # BinaryFormat (26-bit Wiegand)
+    resp = api_post("/binaryFormat/save", {
+      name: "26-bit Wiegand",
+      dataFormatType: 1,
+      minBits: 26,
+      maxBits: 26,
+      supportReverseRead: false,
+      elements: [
+        { num: 0, type: "PARITY", start: 0, len: 1, odd: false, srcStart: 1, srcLen: 12 },
+        { num: 1, type: "FIELD", start: 1, len: 8, field: "FACILITY_CODE" },
+        { num: 2, type: "FIELD", start: 9, len: 16, field: "CRED_NUM" },
+        { num: 3, type: "PARITY", start: 25, len: 1, odd: true, srcStart: 13, srcLen: 12 }
+      ]
+    })
+    @ids[:data_format] = resp["instance"]["unid"]
+    puts "    BinaryFormat: unid=#{@ids[:data_format]}"
+
+    # DataLayout (references BinaryFormat)
+    resp = api_post("/basicDataLayout/save", {
+      name: "Standard 26-bit",
+      layoutType: 0,
+      priority: 0,
+      enabled: true,
+      dataFormat: { unid: @ids[:data_format] }
+    })
+    @ids[:data_layout] = resp["instance"]["unid"]
+    puts "    DataLayout: unid=#{@ids[:data_layout]}"
+
+    # CredTemplate (references DataLayout via cardPinTemplate)
+    resp = api_post("/credTemplate/save", {
+      name: "26-bit Card",
+      priority: 0,
+      cardPinTemplate: {
+        credComponentPresence: "REQUIRED",
+        credNumPresence: "REQUIRED",
+        pinPresence: "ABSENT",
+        dataLayout: { unid: @ids[:data_layout] }
+      }
+    })
+    @ids[:cred_template] = resp["instance"]["unid"]
+    puts "    CredTemplate: unid=#{@ids[:cred_template]}"
+
+    # Schedule: Always (24/7)
+    resp = api_post("/sched/save", {
+      name: "Always",
+      elements: [
+        {
+          holidays: false,
+          schedDays: [0, 1, 2, 3, 4, 5, 6],
+          start: "00:00",
+          stop: "23:59",
+          plusDays: 0
+        }
+      ]
+    })
+    @ids[:schedule] = resp["instance"]["unid"]
+    puts "    Schedule: unid=#{@ids[:schedule]}"
+
+    # DoorAccessPriv (grants access to door with schedule)
+    resp = api_post("/doorAccessPriv/save", {
+      name: "E2E Access",
+      privType: 0,
+      enabled: true,
+      elements: [
+        {
+          door: { unid: @ids[:door] },
+          schedRestriction: { sched: { unid: @ids[:schedule] }, invert: false }
+        }
+      ]
+    })
+    @ids[:priv] = resp["instance"]["unid"]
+    puts "    DoorAccessPriv: unid=#{@ids[:priv]}"
+
+    # Credential with privBindings (card 12345, FC 100, bound to priv)
+    resp = api_post("/cred/save", {
+      name: "E2E Badge",
+      enabled: true,
+      credTemplate: { unid: @ids[:cred_template] },
+      cardPin: { credNum: "12345", facilityCode: "100" },
+      privBindings: [
+        { priv: { unid: @ids[:priv] } }
+      ]
+    })
+    @ids[:cred] = resp["instance"]["unid"]
+    puts "    Credential: unid=#{@ids[:cred]} (with privBinding to priv #{@ids[:priv]})"
+
+    puts "  Config created via REST API: OK"
+  end
 
   # ---- Component Lifecycle ----
 
@@ -176,6 +344,22 @@ class E2EOrchestrator
     print "  Starting SpCoreServer on port #{SPCORE_PORT}... "
     require_relative "../spcore_server"
     @server = SpCoreServer.new(port: SPCORE_PORT)
+
+    # CredReaderConfig (commType, serialPortAddress) is not yet in the REST API.
+    # Patch the proto until that API gap is closed.
+    reader_unid = @ids[:reader]
+    @server.db_change_modifier = ->(db_change) do
+      reader_proto = db_change.dev.find { |d| d.unid == reader_unid }
+      if reader_proto
+        reader_proto.extCredReader = proto::CredReader.new(
+          credReaderConfig: proto::CredReaderConfig.new(
+            commType: :CredReaderCommType_OSDP_HALF_DUPLEX,
+            serialPortAddress: "localhost:#{PD_SIM_OSDP_PORT}"
+          )
+        )
+      end
+    end
+
     @server.start
     puts "OK"
   end
@@ -216,215 +400,70 @@ class E2EOrchestrator
     end
   end
 
-  def wait_for_aporta_connection
+  # Wait for Aporta to connect, server to auto-sync, and OSDP handshake to complete
+  def wait_for_ready
     print "  Waiting for Aporta to connect... "
     @server.wait_for_connection(timeout: 60)
     puts "OK"
 
-    # Send EvtControl to start continuous event flow
-    @server.send_evt_control(proto::EvtControl.new(
-      evtFlowControl: :EvtFlowControl_START_CONTINUOUS
-    ))
-    sleep 1
-  end
+    print "  Waiting for auto-sync (DbChangeBuilder -> Aporta)... "
+    @server.wait_for_sync(timeout: 30)
+    puts "OK"
 
-  # ---- Config: Build and send DbChange ----
-
-  def send_full_config
-    print "  Sending DbChange with full config... "
-    db_change = build_e2e_db_change
-    request_id = @server.send_db_change(db_change)
-    resp = @server.wait_for_db_change_resp(request_id, timeout: 15)
-    if resp.exception && !resp.exception.empty?
-      raise "DbChangeResp exception: #{resp.exception}"
-    end
-    puts "OK (request_id=#{request_id})"
-
-    # Give Aporta time to set up OSDP connection and complete OSDP handshake
-    print "  Waiting for OSDP connection... "
+    print "  Waiting for OSDP handshake... "
     sleep 10
     puts "OK"
   end
 
-  def build_e2e_db_change
-    db_change = proto::DbChange.new
-    db_change.credDeleteAll = true
-    db_change.credTemplateDeleteAll = true
-    db_change.dataLayoutDeleteAll = true
-    db_change.dataFormatDeleteAll = true
-    db_change.devDeleteAll = true
-    db_change.privDeleteAll = true
-    db_change.holCalDeleteAll = true
-    db_change.holTypeDeleteAll = true
-    db_change.schedDeleteAll = true
+  # ---- Flex REST API (Rack-level calls) ----
 
-    # IoController (panel) -- unid 1
-    db_change.dev << proto::Dev.new(
-      name: "E2E Panel",
-      unid: 1,
-      enabled: true,
-      devType: :DevType_IO_CONTROLLER
-    )
-
-    # Door -- unid 2, logical parent = panel (1)
-    db_change.dev << proto::Dev.new(
-      name: "E2E Door",
-      unid: door_unid,
-      enabled: true,
-      devType: :DevType_DOOR,
-      logicalParentUnid: 1
-    )
-
-    # CredReader -- unid 3, physical parent = panel (1), logical parent = door (2)
-    # OSDP config: connect to PD sim at localhost:9843
-    db_change.dev << proto::Dev.new(
-      name: "E2E Reader",
-      unid: 3,
-      enabled: true,
-      devType: :DevType_CRED_READER,
-      physicalParentUnid: 1,
-      logicalParentUnid: door_unid,
-      port: 0,       # OSDP address
-      speed: 9600,    # baud rate
-      extCredReader: proto::CredReader.new(
-        credReaderConfig: proto::CredReaderConfig.new(
-          commType: :CredReaderCommType_OSDP_HALF_DUPLEX,
-          serialPortAddress: "localhost:#{PD_SIM_OSDP_PORT}"
-        )
-      )
-    )
-
-    # DataFormat: 26-bit Wiegand -- unid 10
-    db_change.dataFormat << proto::DataFormat.new(
-      name: "26-bit Wiegand",
-      unid: 10,
-      dataFormatType: :DataFormatType_BINARY,
-      extBinaryFormat: proto::BinaryFormat.new(
-        minBits: 26,
-        maxBits: 26,
-        supportReverseRead: false,
-        elements: [
-          # Even parity (bit 0, covers bits 1-12)
-          proto::BinaryElement.new(
-            num: 0, type: :BinaryElementType_PARITY, start: 0, len: 1,
-            extParityBinaryElement: proto::ParityBinaryElement.new(
-              odd: false, srcStart: 1, srcLen: 12
-            )
-          ),
-          # Facility code (bits 1-8)
-          proto::BinaryElement.new(
-            num: 1, type: :BinaryElementType_FIELD, start: 1, len: 8,
-            extFieldBinaryElement: proto::FieldBinaryElement.new(
-              field: :DataFormatField_FACILITY_CODE
-            )
-          ),
-          # Card number (bits 9-24)
-          proto::BinaryElement.new(
-            num: 2, type: :BinaryElementType_FIELD, start: 9, len: 16,
-            extFieldBinaryElement: proto::FieldBinaryElement.new(
-              field: :DataFormatField_CRED_NUM
-            )
-          ),
-          # Odd parity (bit 25, covers bits 13-24)
-          proto::BinaryElement.new(
-            num: 3, type: :BinaryElementType_PARITY, start: 25, len: 1,
-            extParityBinaryElement: proto::ParityBinaryElement.new(
-              odd: true, srcStart: 13, srcLen: 12
-            )
-          )
-        ]
-      )
-    )
-
-    # DataLayout -- unid 11, references DataFormat 10
-    db_change.dataLayout << proto::DataLayout.new(
-      name: "Standard 26-bit",
-      unid: 11,
-      layoutType: :DataLayoutType_BASIC,
-      priority: 0,
-      enabled: true,
-      extBasicDataLayout: proto::BasicDataLayout.new(dataFormatUnid: 10)
-    )
-
-    # CredTemplate -- unid 12, references DataLayout 11
-    db_change.credTemplate << proto::CredTemplate.new(
-      name: "26-bit Card",
-      unid: 12,
-      priority: 0,
-      cardPinTemplate: proto::CardPinTemplate.new(
-        credComponentPresence: :CredComponentPresence_REQUIRED,
-        credNumPresence: :CredComponentPresence_REQUIRED,
-        pinPresence: :CredComponentPresence_ABSENT,
-        dataLayoutUnid: 11
-      )
-    )
-
-    # Schedule: Always (24/7) -- unid 20
-    db_change.sched << proto::Sched.new(
-      name: "Always",
-      unid: 20,
-      elements: [
-        proto::SchedElement.new(
-          holidays: false,
-          start: proto::SqlTimeData.new(hour: 0, minute: 0, second: 0),
-          stop: proto::SqlTimeData.new(hour: 23, minute: 59, second: 59),
-          plusDays: 0,
-          schedDays: [
-            :SchedDay_MON, :SchedDay_TUES, :SchedDay_WED, :SchedDay_THUR,
-            :SchedDay_FRI, :SchedDay_SAT, :SchedDay_SUN
-          ]
-        )
-      ]
-    )
-
-    # DoorAccessPriv -- unid 30, grants access to door 2 with schedule 20
-    db_change.priv << proto::Priv.new(
-      name: "E2E Access",
-      unid: 30,
-      enabled: true,
-      privType: :PrivType_DOOR,
-      extDoorAccessPriv: proto::DoorAccessPriv.new(
-        elements: [
-          proto::DoorAccessPrivElement.new(
-            doorUnid: door_unid,
-            schedRestriction: proto::SchedRestriction.new(schedUnid: 20, invert: false)
-          )
-        ]
-      )
-    )
-
-    # Credential: card 12345, facility 100 -- unid 40
-    # Bound to priv 30
-    db_change.cred << proto::Cred.new(
-      name: "E2E Badge",
-      unid: 40,
-      enabled: true,
-      credTemplateUnid: 12,
-      cardPin: proto::CardPin.new(
-        credNum: proto::BigIntegerData.new(bytes: bigint_to_bytes(12345)),
-        facilityCode: 100
-      ),
-      privBindings: [
-        proto::CredPrivBinding.new(privUnid: 30)
-      ]
-    )
-
-    db_change
+  def authenticate
+    User.create!(username: "e2e_admin", password: "e2e_password")
+    resp = api_post("/authenticate", { username: "e2e_admin", password: "e2e_password" })
+    @session_token = resp["sessionToken"]
+    raise "Authentication failed" unless @session_token
+    puts "    Authenticated (token=#{@session_token[0..7]}...)"
   end
 
-  def door_unid
-    2
+  def api_post(path, params = {})
+    env = ::Rack::MockRequest.env_for(
+      "http://localhost#{path}",
+      method: "POST",
+      input: params.to_json,
+      "CONTENT_TYPE" => "application/json",
+      "HTTP_HOST" => "localhost",
+      "HTTP_SESSIONTOKEN" => @session_token
+    )
+    status, headers, body = @rack_app.call(env)
+    response_body = ""
+    body.each { |chunk| response_body << chunk }
+    body.close if body.respond_to?(:close)
+
+    unless (200..299).include?(status)
+      raise "API POST #{path} failed (#{status}): #{response_body}"
+    end
+    JSON.parse(response_body)
+  end
+
+  def api_get(path)
+    env = ::Rack::MockRequest.env_for(
+      "http://localhost#{path}",
+      method: "GET",
+      "HTTP_HOST" => "localhost",
+      "HTTP_SESSIONTOKEN" => @session_token
+    )
+    status, headers, body = @rack_app.call(env)
+    response_body = ""
+    body.each { |chunk| response_body << chunk }
+    body.close if body.respond_to?(:close)
+
+    unless (200..299).include?(status)
+      raise "API GET #{path} failed (#{status}): #{response_body}"
+    end
+    JSON.parse(response_body)
   end
 
   # ---- PD Sim HTTP API ----
-
-  def pd_sim_card_read(card_number:, bit_count: 26)
-    pd_sim_post("/card-read", {
-      cardNumber: card_number,
-      bitCount: bit_count,
-      readerNumber: 0
-    })
-  end
 
   def pd_sim_wiegand26_card_read(facility_code:, card_number:, reader_number: 0)
     pd_sim_post("/card-read-wiegand26", {
@@ -441,7 +480,6 @@ class E2EOrchestrator
 
   def reset_pd_sim
     pd_sim_post("/reset", {})
-    # Clear any previously received events
     @server.received_events.clear
   end
 
@@ -459,27 +497,32 @@ class E2EOrchestrator
 
   # ---- Assertions ----
 
-  def wait_for_access_event(timeout: 10)
+  def wait_for_db_event(count_before, timeout: 10)
     deadline = Time.now + timeout
-    initial_count = @server.received_events.size
     loop do
-      if @server.received_events.size > initial_count
-        evt = @server.received_events.last
-        code = evt.evtCode
-        if code == :EvtCode_DOOR_ACCESS_GRANTED || code == :EvtCode_DOOR_ACCESS_DENIED
-          return evt
+      if Event.count > count_before
+        # Check all new events for an access decision
+        evt = Event.where(evt_code: [48, 49]).order(created_at: :desc).first
+        return evt if evt
+
+        # If no match yet, log what we do have for debugging
+        if Time.now > deadline
+          recent = Event.order(created_at: :desc).limit(5).pluck(:id, :evt_code)
+          raise "Timeout waiting for access event in database " \
+                "(events before=#{count_before}, after=#{Event.count}, " \
+                "recent evt_codes=#{recent.map(&:last).inspect})"
         end
       end
       if Time.now > deadline
-        raise "Timeout waiting for access event (received #{@server.received_events.size - initial_count} events)"
+        raise "Timeout waiting for access event in database (events before=#{count_before}, after=#{Event.count})"
       end
       sleep 0.1
     end
   end
 
-  def assert_evt_code(evt, expected_code, message)
-    unless evt.evtCode == expected_code
-      raise "#{message}: got #{evt.evtCode} instead of #{expected_code}"
+  def assert_evt_code_int(evt, expected_code, message)
+    unless evt.evt_code == expected_code
+      raise "#{message}: got #{evt.evt_code} instead of #{expected_code}"
     end
   end
 
@@ -500,16 +543,5 @@ class E2EOrchestrator
       end
       sleep 0.5
     end
-  end
-
-  def bigint_to_bytes(num)
-    return "\x00".b if num.nil? || num == 0
-    bytes = []
-    n = num.to_i
-    while n > 0
-      bytes.unshift(n & 0xFF)
-      n >>= 8
-    end
-    bytes.pack("C*")
   end
 end

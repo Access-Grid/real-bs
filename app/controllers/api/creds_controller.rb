@@ -14,6 +14,7 @@ module Api
       attrs = CredTranslator.from_flex(params.to_unsafe_h)
       cred = Credential.new(attrs)
       if cred.save
+        CredTranslator.save_priv_bindings(cred, params.to_unsafe_h["privBindings"])
         render json: { instance: CredTranslator.to_flex(cred) }
       else
         render json: { errors: cred.errors.full_messages }, status: :unprocessable_entity
@@ -26,6 +27,9 @@ module Api
 
       attrs = CredTranslator.from_flex(params.to_unsafe_h)
       if cred.update(attrs)
+        if params.to_unsafe_h.key?("privBindings")
+          CredTranslator.save_priv_bindings(cred, params.to_unsafe_h["privBindings"])
+        end
         render json: { instance: CredTranslator.to_flex(cred) }
       else
         render json: { errors: cred.errors.full_messages }, status: :unprocessable_entity
