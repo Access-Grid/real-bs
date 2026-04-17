@@ -50,6 +50,20 @@ Rails.application.routes.draw do
     post "sensor/update/:id" => "api/sensors#update"
     post "sensor/delete/:id" => "api/sensors#delete"
 
+    # CredHolder (maps to Person)
+    get "credHolder/list" => "api/cred_holders#list"
+    get "credHolder/show/:id" => "api/cred_holders#show"
+    post "credHolder/save" => "api/cred_holders#save"
+    post "credHolder/update/:id" => "api/cred_holders#update"
+    post "credHolder/delete/:id" => "api/cred_holders#delete"
+
+    # CredHolderType
+    get "credHolderType/list" => "api/cred_holder_types#list"
+    get "credHolderType/show/:id" => "api/cred_holder_types#show"
+    post "credHolderType/save" => "api/cred_holder_types#save"
+    post "credHolderType/update/:id" => "api/cred_holder_types#update"
+    post "credHolderType/delete/:id" => "api/cred_holder_types#delete"
+
     # Cred
     get "cred/list" => "api/creds#list"
     get "cred/show/:id" => "api/creds#show"

@@ -185,6 +185,7 @@ class E2EOrchestrator
      ScheduleElementHolidayType, ScheduleElement, Schedule,
      DataLayout, CredentialFormat, CredentialType,
      Device, Sector, Building, HolidayHolidayType, Holiday, HolidayCalendar, HolidayType,
+     Person, CredHolderType,
      ApiSession, User].each do |model|
       model.delete_all
     rescue => e

@@ -53,6 +53,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_000001) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "cred_holder_types", force: :cascade do |t|
+    t.string "name"
+    t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["uuid"], name: "index_cred_holder_types_on_uuid", unique: true
+  end
+
   create_table "cred_priv_bindings", force: :cascade do |t|
     t.integer "credential_id", null: false
     t.integer "access_rule_set_id"
@@ -254,12 +264,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_000001) do
     t.index ["uuid"], name: "index_events_on_uuid", unique: true
   end
 
-  create_table "groups", force: :cascade do |t|
-    t.string "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "holiday_calendars", force: :cascade do |t|
     t.string "name", null: false
     t.string "uuid"
@@ -313,11 +317,23 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_000001) do
     t.string "title"
     t.string "phone_number"
     t.string "email"
-    t.integer "group_id", null: false
-    t.json "metadata"
+    t.string "uuid"
+    t.integer "lock_version", default: 0
+    t.string "tag"
+    t.boolean "enabled", default: true
+    t.integer "cred_holder_type_id"
+    t.string "custom_text_0"
+    t.string "custom_text_1"
+    t.string "custom_text_2"
+    t.string "custom_text_3"
+    t.string "custom_text_4"
+    t.string "custom_text_5"
+    t.string "custom_text_6"
+    t.string "custom_text_7"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["group_id"], name: "index_people_on_group_id"
+    t.index ["cred_holder_type_id"], name: "index_people_on_cred_holder_type_id"
+    t.index ["uuid"], name: "index_people_on_uuid", unique: true
   end
 
   create_table "schedule_element_holiday_types", force: :cascade do |t|
@@ -393,7 +409,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_04_17_000001) do
   add_foreign_key "holiday_holiday_types", "holiday_types"
   add_foreign_key "holiday_holiday_types", "holidays"
   add_foreign_key "holidays", "holiday_calendars"
-  add_foreign_key "people", "groups"
+  add_foreign_key "people", "cred_holder_types"
   add_foreign_key "schedule_element_holiday_types", "holiday_types"
   add_foreign_key "schedule_element_holiday_types", "schedule_elements"
   add_foreign_key "schedule_elements", "schedules"

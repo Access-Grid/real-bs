@@ -36,8 +36,8 @@ class CredentialTest < ActiveSupport::TestCase
   end
 
   test "can associate with person" do
-    group = Group.create!(name: "Staff")
-    person = Person.create!(first_name: "John", last_name: "Doe", group: group)
+    group = CredHolderType.create!(name: "Staff")
+    person = Person.create!(first_name: "John", last_name: "Doe", cred_holder_type: group)
     cred = Credential.create!(name: "John Badge", person: person)
     assert_equal person.id, cred.person_id
   end

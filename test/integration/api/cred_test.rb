@@ -7,8 +7,8 @@ class Api::CredTest < ActionDispatch::IntegrationTest
     @token = JSON.parse(response.body)["sessionToken"]
 
     @ct = CredentialType.create!(name: "Prox Card")
-    @group = Group.create!(name: "Staff")
-    @person = Person.create!(first_name: "Jane", last_name: "Doe", group: @group)
+    @cht = CredHolderType.create!(name: "Staff")
+    @person = Person.create!(first_name: "Jane", last_name: "Doe", cred_holder_type: @cht)
     @cred = Credential.create!(
       name: "Jane Badge",
       credential_type: @ct,

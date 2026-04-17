@@ -3,8 +3,8 @@ require "test_helper"
 class CredTranslatorTest < ActiveSupport::TestCase
   test "to_flex maps all fields" do
     ct = CredentialType.create!(name: "Prox Card")
-    group = Group.create!(name: "Staff")
-    person = Person.create!(first_name: "Jane", last_name: "Doe", group: group)
+    group = CredHolderType.create!(name: "Staff")
+    person = Person.create!(first_name: "Jane", last_name: "Doe", cred_holder_type: group)
     cred = Credential.create!(
       name: "Jane Badge",
       enabled: true,
@@ -123,8 +123,8 @@ class CredTranslatorTest < ActiveSupport::TestCase
   end
 
   test "from_flex resolves credHolder by unid" do
-    group = Group.create!(name: "Staff")
-    person = Person.create!(first_name: "Bob", last_name: "Smith", group: group)
+    group = CredHolderType.create!(name: "Staff")
+    person = Person.create!(first_name: "Bob", last_name: "Smith", cred_holder_type: group)
     json = { "name" => "Badge", "credHolder" => { "unid" => person.id } }
     attrs = CredTranslator.from_flex(json)
     assert_equal person.id, attrs[:person_id]

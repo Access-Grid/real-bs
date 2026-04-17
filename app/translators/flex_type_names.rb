@@ -7,7 +7,9 @@ module FlexTypeNames
     "HolidayCalendar" => "HolCal",
     "CredentialFormat" => "DataFormat",
     "AccessRuleSet" => "DoorAccessPriv",
-    "Credential" => "Cred"
+    "Credential" => "Cred",
+    "Person" => "CredHolder",
+    "CredHolderType" => "CredHolderType"
   }.freeze
 
   def self.for(record)

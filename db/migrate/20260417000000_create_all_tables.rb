@@ -23,9 +23,13 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    create_table "groups" do |t|
+    create_table "cred_holder_types" do |t|
       t.string "name"
+      t.string "uuid"
+      t.integer "lock_version", default: 0
+      t.string "tag"
       t.timestamps
+      t.index ["uuid"], unique: true
     end
 
     create_table "people" do |t|
@@ -34,9 +38,21 @@ class CreateAllTables < ActiveRecord::Migration[8.0]
       t.string "title"
       t.string "phone_number"
       t.string "email"
-      t.references :group, null: false, foreign_key: true
-      t.json "metadata"
+      t.string "uuid"
+      t.integer "lock_version", default: 0
+      t.string "tag"
+      t.boolean "enabled", default: true
+      t.references :cred_holder_type, foreign_key: true
+      t.string "custom_text_0"
+      t.string "custom_text_1"
+      t.string "custom_text_2"
+      t.string "custom_text_3"
+      t.string "custom_text_4"
+      t.string "custom_text_5"
+      t.string "custom_text_6"
+      t.string "custom_text_7"
       t.timestamps
+      t.index ["uuid"], unique: true
     end
 
     create_table "users" do |t|

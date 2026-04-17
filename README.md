@@ -33,7 +33,7 @@ bundle exec rake e2e:test_access_denied
 
 The swagger spec is at `~/git/z9flex-community/z9flex-swagger-community.yaml`.
 
-### Implemented Endpoints (102 of 102 swagger endpoints)
+### Implemented Endpoints (112 of 112 swagger endpoints)
 
 | Group | Endpoints |
 |-------|-----------|
@@ -46,6 +46,8 @@ The swagger spec is at `~/git/z9flex-community/z9flex-swagger-community.yaml`.
 | Sensor | `GET /sensor/list`, `GET /sensor/show/{id}`, `POST /sensor/save`, `POST /sensor/update/{id}`, `POST /sensor/delete/{id}` |
 | Actuator | `GET /actuator/list`, `GET /actuator/show/{id}`, `POST /actuator/save`, `POST /actuator/update/{id}`, `POST /actuator/delete/{id}` |
 | NodeDev | `GET /nodeDev/list`, `GET /nodeDev/show/{id}`, `POST /nodeDev/save`, `POST /nodeDev/update/{id}`, `POST /nodeDev/delete/{id}` |
+| CredHolder | `GET /credHolder/list`, `GET /credHolder/show/{id}`, `POST /credHolder/save`, `POST /credHolder/update/{id}`, `POST /credHolder/delete/{id}` |
+| CredHolderType | `GET /credHolderType/list`, `GET /credHolderType/show/{id}`, `POST /credHolderType/save`, `POST /credHolderType/update/{id}`, `POST /credHolderType/delete/{id}` |
 | Cred | `GET /cred/list`, `GET /cred/show/{id}`, `POST /cred/save`, `POST /cred/update/{id}`, `POST /cred/delete/{id}` |
 | CredTemplate | `GET /credTemplate/list`, `GET /credTemplate/show/{id}`, `POST /credTemplate/save`, `POST /credTemplate/update/{id}`, `POST /credTemplate/delete/{id}` |
 | DataFormat | `GET /dataFormat/list`, `GET /dataFormat/show/{id}`, `POST /dataFormat/save`, `POST /dataFormat/update/{id}`, `POST /dataFormat/delete/{id}` |
@@ -121,7 +123,7 @@ Full-stack E2E tests exercise the complete access control pipeline:
 - [x] `CredTemplate.kind`, `CredTemplate.frequency`, `CredTemplate.protocol` -- removed
 
 ### Consider
-- [ ] `Cred.credHolder` -- ObjRef to Person; useful but not currently in community swagger
+- [x] `Cred.credHolder` -- ObjRef to Person; now in community swagger, credHolder/credHolderType endpoints implemented
 - [ ] Consider aligning remaining Ruby class names with Flex names (e.g., CredentialFormat->DataFormat as model name)
 
 ### Improvements
