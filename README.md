@@ -81,12 +81,15 @@ Full-stack E2E tests exercise the complete access control pipeline:
 - **osdp-net-pd-sim** (`~/git/osdp-net-pd-sim`) -- OSDP PD simulator with HTTP control API
 
 **Test flow:**
-1. Start PD sim (OSDP listener + HTTP API)
-2. Start SpCoreServer (protobuf TCP on 9723)
-3. Start Aporta (connects to SpCoreServer + PD sim)
-4. Send DbChange with devices, credentials, access rules, schedules
-5. Trigger card swipe via PD sim HTTP API
-6. Verify ACCESS_GRANTED/DENIED event received back over protobuf
+1. Create all entities via REST API (IoController, Door, CredReader, formats, schedules, credentials with privBindings)
+2. Start PD sim (OSDP listener + HTTP API)
+3. Start SpCoreServer (protobuf TCP on 9723)
+4. Start Aporta (connects to SpCoreServer + PD sim)
+5. SpCoreServer auto-syncs: builds full DbChange via DbChangeBuilder and sends to Aporta
+6. Trigger card swipe via PD sim HTTP API
+7. Aporta makes access decision, sends event back over protobuf
+8. SpCoreServer persists event to Event table
+9. Verify ACCESS_GRANTED/DENIED event via `GET /evt/list` REST API
 
 **Prerequisites:** .NET 9.0 SDK, Aporta and osdp-net-pd-sim repos cloned at `~/git/`.
 
@@ -101,13 +104,13 @@ Full-stack E2E tests exercise the complete access control pipeline:
 #### DevConfig Subtypes (all currently stubbed as `{}`)
 - [ ] **ControllerConfig**: username, password, devInitiatesConnection, encryptionKeyRef, encryptionKeyRefNext, disableEncryption
 - [ ] **DoorConfig**: not defined in swagger (schema referenced but missing) -- stub is correct for now
-- [ ] **CredReaderConfig**: (ControllerConfig fields) + commType, tamperType, ledType, serialPortAddress
+- [ ] **CredReaderConfig**: (ControllerConfig fields) + commType, tamperType, ledType, serialPortAddress -- E2E test uses `db_change_modifier` to patch OSDP fields on the proto as a workaround until this API is implemented
 - [ ] **SensorConfig**: (ControllerConfig fields) + invert
 - [ ] **ActuatorConfig**: (ControllerConfig fields) + invert
 - [ ] **NodeDevConfig**: same fields as ControllerConfig
 
 #### Cred
-- [ ] `privBindings` -- currently stubbed as `[]`; needs CredPrivBinding join model
+- [x] `privBindings` -- CredPrivBinding join model with priv, schedRestriction, devAsDoorAccessPriv
 - [ ] `doorAccessModifiers` -- missing from translator
 
 #### DoorAccessPriv
