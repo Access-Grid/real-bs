@@ -122,9 +122,11 @@ Full-stack E2E tests exercise the complete access control pipeline:
 - [ ] `Cred.credHolder` -- ObjRef to Person; useful but not currently in community swagger
 - [ ] `POST /credHolder/import` -- CSV file upload for bulk credential holder import
 
+### Implementation Gaps
+- [ ] `Hol` in DbChangeBuilder -- individual Hol entries are in the community proto DbChange (fields 155-157) but DbChangeBuilder does not serialize them yet. Aporta does not receive actual holiday dates.
+
 ### Upstream Schema Gaps (blocked on community spec)
 - [ ] `DoorConfig` -- schema referenced in swagger but definition is missing. Door translator stubs `doorConfig: {}`. Implement when upstream adds the schema.
-- [ ] `Hol` (individual holidays) missing from DbChange proto -- HolCal and HolType are sent but individual Hol entries with dates are not part of the current proto DbChange message. This means Aporta does not receive actual holiday dates, only holiday types and calendar names. Likely a proto spec gap that needs to be addressed upstream.
 
 ### Cross-Cutting
 - [ ] `version` field -- optimistic locking, stubbed across all entities

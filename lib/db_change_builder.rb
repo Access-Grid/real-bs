@@ -323,9 +323,7 @@ class DbChangeBuilder
   end
 
   # -- HolCal --
-  # Note: Individual Hol (holiday) entries are NOT part of the proto DbChange.
-  # HolCal is just name/uuid/unid. Holidays reference their calendar via holCalUnid
-  # but are not sent in the download protocol.
+  # TODO: Individual Hol entries ARE in the proto DbChange (fields 155-157) but not yet serialized here.
   def self.build_hol_cal(hc)
     proto = P::HolCal.new(name: hc.name, unid: hc.id)
     proto.uuid = hc.uuid if hc.uuid.present?
