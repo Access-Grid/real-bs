@@ -1,0 +1,2 @@
+class Door < Device
+end

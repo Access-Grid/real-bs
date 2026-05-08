@@ -1,0 +1,72 @@
+require "test_helper"
+
+class SensorTranslatorTest < ActiveSupport::TestCase
+  setup do
+    @building = Building.create!(name: "HQ")
+    @sector = Sector.create!(name: "Floor 1", building: @building)
+    @io_controller = IoController.create!(name: "Panel 1", sector: @sector)
+    @door = Door.create!(name: "Front Door", sector: @sector, logical_parent: @io_controller)
+    @sensor = Sensor.create!(name: "Door Contact", brand: "Z9", model: "DC-100", sector: @sector, physical_parent: @io_controller, logical_parent: @door)
+  end
+
+  test "to_flex returns devType 2" do
+    result = SensorTranslator.to_flex(@sensor)
+    assert_equal 2, result[:devType]
+  end
+
+  test "to_flex maps unid, uuid, name" do
+    result = SensorTranslator.to_flex(@sensor)
+    assert_equal @sensor.id, result[:unid]
+    assert_equal @sensor.uuid, result[:uuid]
+    assert_equal "Door Contact", result[:name]
+  end
+
+  test "to_flex includes logicalParent for door" do
+    result = SensorTranslator.to_flex(@sensor)
+    assert_equal @door.id, result[:logicalParent][:unid]
+  end
+
+  test "from_flex extracts name and metadata fields" do
+    attrs = SensorTranslator.from_flex({
+      "name" => "REX Sensor",
+      "metadata" => { "brand" => "Z9", "serialNumber" => "XYZ789" }
+    })
+    assert_equal "REX Sensor", attrs[:name]
+    assert_equal "Z9", attrs[:brand]
+    assert_equal "XYZ789", attrs[:serial_number]
+  end
+
+  # -- SensorConfig --
+
+  test "to_flex returns sensorConfig with invert" do
+    @sensor.update!(dev_config: { "invert" => true })
+    result = SensorTranslator.to_flex(@sensor)
+    assert_equal true, result[:sensorConfig][:invert]
+  end
+
+  test "to_flex returns sensorConfig with base fields" do
+    @sensor.update!(dev_config: { "username" => "sensor_user" })
+    result = SensorTranslator.to_flex(@sensor)
+    assert_equal "sensor_user", result[:sensorConfig][:username]
+  end
+
+  test "to_flex returns sensorConfig with unid and version when no dev_config" do
+    result = SensorTranslator.to_flex(@sensor)
+    assert_equal @sensor.id, result[:sensorConfig][:unid]
+    assert_equal 0, result[:sensorConfig][:version]
+  end
+
+  test "from_flex extracts sensorConfig into dev_config" do
+    attrs = SensorTranslator.from_flex({
+      "name" => "Sensor",
+      "sensorConfig" => { "invert" => true, "username" => "admin" }
+    })
+    assert_equal true, attrs[:dev_config]["invert"]
+    assert_equal "admin", attrs[:dev_config]["username"]
+  end
+
+  test "from_flex without sensorConfig does not set dev_config" do
+    attrs = SensorTranslator.from_flex({ "name" => "Sensor" })
+    assert_nil attrs[:dev_config]
+  end
+end

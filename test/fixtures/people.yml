@@ -6,8 +6,7 @@ one:
   title: MyString
   phone_number: MyString
   email: MyString
-  group: one
-  metadata: 
+  cred_holder_type: one
 
 two:
   first_name: MyString
@@ -15,5 +14,4 @@ two:
   title: MyString
   phone_number: MyString
   email: MyString
-  group: two
-  metadata: 
+  cred_holder_type: two
